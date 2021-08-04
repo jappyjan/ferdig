@@ -78,7 +78,7 @@ export default class ApplicationCollectionDocumentsService {
         $log.info('socket connected', socket.id, socket.handshake.auth);
 
         const {sub: userId} = await validateAuthJwt(socket.handshake.auth.token as string);
-        const user = await this.usersService.getOneOrFail({id: userId});
+        const user = await this.usersService.getOneWithoutAuthCheckOrFail({id: userId});
 
         let applicationId = '__CONSOLE_ACCESS__';
         if (!user.auth.hasConsoleAccess) {
@@ -477,7 +477,6 @@ export default class ApplicationCollectionDocumentsService {
             let property = document.properties[propertyIndex];
 
             if (!property) {
-                // TODO: create property
                 property = await this.createDocumentProperty(
                     runner,
                     collection,

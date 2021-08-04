@@ -4,7 +4,6 @@ import {Returns, Summary} from '@tsed/schema';
 import ApplicationsService from '../../services/Applications/ApplicationsService';
 import User from '../../entity/Users/User';
 import {Authorize} from '@tsed/passport';
-import ApplicationUsersController from './Users/ApplicationUsersController';
 import ApplicationModel from './Models/ApplicationModel';
 import ApplicationsListResponseModel from './Models/ApplicationsListResponseModel';
 import ApplicationsListPayloadModel from './Models/ApplicationsListPayloadModel';
@@ -23,7 +22,6 @@ import Application from '../../entity/Applications/Application';
     path: '/applications',
     children: [
         ApplicationCollectionsController,
-        ApplicationUsersController,
         ApplicationAutomationsController,
         ApplicationNotificationsController,
     ],

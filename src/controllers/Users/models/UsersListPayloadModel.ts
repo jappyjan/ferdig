@@ -1,6 +1,6 @@
 import {Enum, Nullable, Required} from '@tsed/schema';
-import {ListPayload, ListSort, ListSortSortableColumns} from '../../../../services/Users/ListPayload';
-import ListPaginationModel from '../../../shared-models/ListPaginationModel';
+import {ListPayload, ListSort, ListSortSortableColumns} from '../../../services/Users/ListPayload';
+import ListPaginationModel from '../../shared-models/ListPaginationModel';
 
 class ListSortModel implements ListSort {
     @Enum(ListSortSortableColumns)
@@ -10,7 +10,7 @@ class ListSortModel implements ListSort {
     descending: boolean;
 }
 
-export default class ApplicationUsersListPayloadModel implements ListPayload {
+export default class UsersListPayloadModel implements ListPayload {
     @Nullable(ListPaginationModel)
     public pagination: ListPaginationModel;
 

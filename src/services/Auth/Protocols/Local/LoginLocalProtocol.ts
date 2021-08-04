@@ -44,7 +44,7 @@ export class LoginLocalProtocol implements OnVerify {
     ): Promise<User & { token: string }> {
         const {email, password} = credentials;
 
-        const user = await this.usersService.getOne({email});
+        const user = await this.usersService.getOneWithoutAuthCheck({email});
 
         if (!user) {
             throw new WrongCredentialsError();

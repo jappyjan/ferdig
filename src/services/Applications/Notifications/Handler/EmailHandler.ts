@@ -25,7 +25,6 @@ export default class EmailHandler implements NotificationHandler {
             to: user.email,
             subject: notification.subject,
             text: notification.body,
-            // TODO: wrap with html template
             html: notification.body,
         });
     }

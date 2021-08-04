@@ -140,7 +140,7 @@ export default class ApplicationNotificationsService {
                 throw new Error(`Unknown User identifier: ${JSON.stringify(userOrIdentifier)}`);
             }
 
-            user = await this.usersService.getOneOrFail(
+            user = await this.usersService.getOneWithoutAuthCheckOrFail(
                 {
                     id: userOrIdentifier.userId,
                     applicationId: userOrIdentifier.applicationId,

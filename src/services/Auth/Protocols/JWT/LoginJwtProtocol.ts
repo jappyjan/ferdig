@@ -27,7 +27,7 @@ export class LoginJwtProtocol implements OnVerify {
     ): Promise<User | false> {
         try {
             const userId = jwtPayload.sub;
-            const user = await this.usersService.getOne({id: userId});
+            const user = await this.usersService.getOneWithoutAuthCheck({id: userId});
 
             req.user = user;
             return user;

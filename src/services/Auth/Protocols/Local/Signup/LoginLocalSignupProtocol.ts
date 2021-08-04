@@ -23,7 +23,7 @@ export class LoginLocalSignupProtocol implements OnVerify {
 
     public async $onVerify(@Req() request: Req, @BodyParams() userData: CreatePayload): Promise<User> {
         const {email} = userData;
-        const found = await this.usersService.getOne({email});
+        const found = await this.usersService.getOneWithoutAuthCheck({email});
 
         if (found) {
             throw new EmailAlreadyRegisteredError();

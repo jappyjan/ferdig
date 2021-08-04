@@ -44,7 +44,21 @@ export default class UsersService {
             .leftJoinAndSelect('application.configuration', 'applicationConfiguration');
     }
 
-    public async getOne(
+    public async getOneByIdOrFail(
+        authenticatedUser: User | null,
+        userId: string,
+    ): Promise<User> {
+        if (!authenticatedUser?.auth.hasConsoleAccess && authenticatedUser?.id !== userId) {
+            throw new NoConsoleAccessError();
+        }
+
+        return await this.getOneWithoutAuthCheckOrFail(
+            {id: userId},
+            false,
+        );
+    }
+
+    public async getOneWithoutAuthCheck(
         identifier: Partial<UserIdentifier>,
         includeDisabled = false,
         injectedRunner?: QueryRunner,
@@ -68,12 +82,12 @@ export default class UsersService {
         return user || false;
     }
 
-    public async getOneOrFail(
+    public async getOneWithoutAuthCheckOrFail(
         identifier: Partial<UserIdentifier>,
         includeDisabled = false,
         injectedRunner?: QueryRunner,
     ): Promise<User> {
-        const user = await this.getOne(identifier, includeDisabled, injectedRunner);
+        const user = await this.getOneWithoutAuthCheck(identifier, includeDisabled, injectedRunner);
 
         if (!user) {
             throw new UnknownUserError(identifier);
@@ -168,9 +182,13 @@ export default class UsersService {
 
     public async list(
         authenticatedUser: User | null,
-        applicationId: string,
+        applicationId: string | null,
         params: ListPayload,
     ): Promise<ListResult<User>> {
+        if (!authenticatedUser?.auth.hasConsoleAccess) {
+            throw new NoConsoleAccessError();
+        }
+
         let pagination = params.pagination;
         if (!pagination) {
             pagination = {
@@ -183,9 +201,13 @@ export default class UsersService {
             pagination.take = 50;
         }
 
-        const query = this.getBaseQuery(this.orm.manager)
-            .where('user.applicationId = :applicationId', {applicationId})
-            .skip(pagination.skip)
+        const query = this.getBaseQuery(this.orm.manager);
+
+        if (applicationId) {
+            query.where('user.applicationId = :applicationId', {applicationId});
+        }
+
+        query.skip(pagination.skip)
             .take(pagination.take + 1);
 
         if (params.sort) {
@@ -207,7 +229,7 @@ export default class UsersService {
     }
 
     public async verifyEmail(userId: string, token: string): Promise<void> {
-        const user = await this.getOneOrFail({id: userId});
+        const user = await this.getOneWithoutAuthCheckOrFail({id: userId});
 
         if (user.auth.emailValidationToken === null) {
             throw new InvalidEmailValidationToken();
