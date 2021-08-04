@@ -13,6 +13,6 @@ export const actions: ActionTree<State, RootState> = {
             throw new Error('Cannot get Users: no activeApplication');
         }
 
-        return getFerdigClient().applications.users(applicationsState.activeApplication.id);
+        return getFerdigClient().users;
     }),
 }

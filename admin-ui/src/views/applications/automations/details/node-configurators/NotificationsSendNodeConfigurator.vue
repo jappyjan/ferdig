@@ -1,15 +1,15 @@
 <template>
   <div>
-    <v-text-field label="User ID"
+    <v-text-field label="userId"
                   v-model="userId"
     />
-    <v-text-field label="Subject"
+    <v-text-field label="notification.subject"
                   v-model="subject"
     />
-    <v-text-field label="Body"
+    <v-text-field label="notification.body"
                   v-model="body"
     />
-    <v-select label="Medium"
+    <v-select label="notificationMedium"
               v-model="medium"
               :items="notificationMediums"
               item-value="value"

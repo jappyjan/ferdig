@@ -67,9 +67,6 @@ export default class ApplicationsService implements OnInit {
         authenticatedUser: User | null,
         data: CreatePayload,
     ): Promise<Application> {
-        if (!authenticatedUser || !authenticatedUser.auth.hasConsoleAccess) {
-            throw new NoConsoleAccessError();
-        }
 
         const runner = this.orm.createQueryRunner();
         await runner.connect();
@@ -79,20 +76,57 @@ export default class ApplicationsService implements OnInit {
             'ApplicationsService::createApplication',
             {runner, isInjectedRunner: false},
             async ({runner: runnerInTransaction}) => {
-                const manager = runnerInTransaction.manager;
-
-                const configuration = await manager.getRepository(ApplicationConfiguration)
-                    .save({
-                        loginRequiresValidEmail: true,
-                    });
-
-                return await manager.getRepository(Application)
-                    .save({
-                        configuration,
-                        internalName: data.internalName,
-                    });
+                return await this.createApplicationWithRunner(
+                    authenticatedUser,
+                    data,
+                    runnerInTransaction,
+                );
             },
         );
+    }
+
+    // noinspection JSMethodCanBeStatic
+    private async createApplicationWithRunner(
+        authenticatedUser: User | null,
+        data: CreatePayload,
+        runner: QueryRunner,
+    ): Promise<Application> {
+        if (!authenticatedUser || !authenticatedUser.auth.hasConsoleAccess) {
+            throw new NoConsoleAccessError();
+        }
+
+        const manager = runner.manager;
+
+        const configuration = await manager.getRepository(ApplicationConfiguration)
+            .save({
+                loginRequiresValidEmail: true,
+            });
+
+        const application = await manager.getRepository(Application)
+            .save({
+                configuration,
+                internalName: data.internalName,
+            });
+
+        const emailVerificationNotificationTemplate = await this.notificationTemplatesService.create(
+            authenticatedUser,
+            application.id,
+            {
+                internalName: 'E-Mail Verification',
+                subject: 'Please verify your E-Mail',
+                body: 'Thanks for signing up! Here is your verification token: $emailVerificationToken$',
+            },
+            runner,
+        );
+
+        application.automations = await this.automationsService.createDefaultAutomations(
+            authenticatedUser,
+            application.id,
+            emailVerificationNotificationTemplate.id,
+            runner,
+        );
+
+        return application;
     }
 
     public async getApplicationById(
@@ -260,15 +294,19 @@ export default class ApplicationsService implements OnInit {
             return this.usersService.remove(authenticatedUser, item.id, runner);
         }));
 
-        const removeConfiguration = runner.manager.getRepository(ApplicationConfiguration)
-            .remove(application.configuration);
-
-        await waitForAllPromises<unknown>([
+        const promises: Promise<unknown>[] = [
             removeCollections,
             removeAutomations,
             removeNotificationTemplates,
             removeUsers,
-            removeConfiguration,
-        ]);
+        ];
+
+        if (application.configuration) {
+            const removeConfiguration = runner.manager.getRepository(ApplicationConfiguration)
+                .remove(application.configuration);
+            promises.push(removeConfiguration);
+        }
+
+        await waitForAllPromises<unknown>(promises);
     }
 }

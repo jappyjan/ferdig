@@ -27,6 +27,7 @@ import ApplicationCollectionDocumentAccessRule
     from '../../../entity/Applications/Collections/ApplicationCollectionDocumentAccessRule';
 import CollectionColumnNotFoundError from './errors/CollectionCollumNotFoundError';
 import {runInTransaction, waitForAllPromises} from '../../../utils/typeorm.utils';
+import ApplicationCollectionDocument from '../../../entity/Applications/Collections/ApplicationCollectionDocument';
 
 const fetchAccessRuleRecursively = async (manager: EntityManager, rule: ApplicationCollectionDocumentAccessRule): Promise<void> => {
     const [and, or] = await waitForAllPromises([
@@ -537,6 +538,21 @@ export default class ApplicationCollectionsService {
             },
             runner,
         )));
+
+        const documents = await manager.getRepository(ApplicationCollectionDocument)
+            .createQueryBuilder('document')
+            .leftJoinAndSelect('document.properties', 'property')
+            .where('document.collectionId = :collection', {collection: collection.id})
+            .getMany();
+
+        const allProperties: ApplicationCollectionDocumentProperty[] = [];
+        documents.forEach((document) => allProperties.push(...document.properties));
+
+        await manager.getRepository(ApplicationCollectionDocumentProperty)
+            .remove(allProperties);
+
+        await manager.getRepository(ApplicationCollectionDocument)
+            .remove(documents);
 
         await manager.getRepository(ApplicationCollection)
             .remove(collection);

@@ -10,15 +10,11 @@ import {ApplicationAutomationFlowNodeType} from '../../../entity/Applications/Au
 import ApplicationAutomationsService from '../Automations/ApplicationAutomationsService';
 import AutomationPayloadError from '../Automations/Errors/AutomationPayloadError';
 import {QueryRunner} from 'typeorm';
+import {ApplicationNotificationMedium} from './ApplicationNotificationMedium';
 
 export interface UserIdentifier {
     userId: string;
     applicationId: string;
-}
-
-export enum NotificationMedium {
-    Email = 'Email',
-    Push = 'Push'
 }
 
 @Service()
@@ -112,19 +108,19 @@ export default class ApplicationNotificationsService {
     public async sendNotification(
         userIdentifier: UserIdentifier,
         payload: NotificationPayload,
-        allowedMedium: NotificationMedium[],
+        allowedMedium: ApplicationNotificationMedium[],
         injectedRunner?: QueryRunner,
     ): Promise<void>
     public async sendNotification(
         user: User,
         payload: NotificationPayload,
-        allowedMedium: NotificationMedium[],
+        allowedMedium: ApplicationNotificationMedium[],
         injectedRunner?: QueryRunner,
     ): Promise<void>
     public async sendNotification(
         userOrIdentifier: User | UserIdentifier,
         payload: NotificationPayload,
-        allowedMedium: NotificationMedium[],
+        allowedMedium: ApplicationNotificationMedium[],
         injectedRunner?: QueryRunner,
     ): Promise<void> {
         let user!: User;
@@ -153,13 +149,13 @@ export default class ApplicationNotificationsService {
         const notificationSettings = await this.getOrCreateNotificationSettings(user, injectedRunner);
 
         if (
-            allowedMedium.includes(NotificationMedium.Push) &&
+            allowedMedium.includes(ApplicationNotificationMedium.Push) &&
             notificationSettings.wantsPushNotifications
         ) {
             return await this.pushNotificationsHandler.send(user, payload);
         }
 
-        if (allowedMedium.includes(NotificationMedium.Email)) {
+        if (allowedMedium.includes(ApplicationNotificationMedium.Email)) {
             await this.emailHandler.send(user, payload);
         }
     }

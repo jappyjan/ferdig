@@ -24,6 +24,7 @@ import {getEnvVar} from '../../../utils/env';
 import resolvePath from 'object-resolve-path';
 import {runInTransaction, waitForAllPromises} from '../../../utils/typeorm.utils';
 import NoConsoleAccessError from '../../Auth/errors/NoConsoleAccessError';
+import {ApplicationNotificationMedium} from '../Notifications/ApplicationNotificationMedium';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -170,17 +171,20 @@ export default class ApplicationAutomationsService {
         authenticatedUser: User | null,
         applicationId: string,
         data: ApplicationAutomationCreatePayload,
+        injectedRunner?: QueryRunner,
     ): Promise<ApplicationAutomation> {
         if (!authenticatedUser || !authenticatedUser.auth.hasConsoleAccess) {
             throw new AccessToEntityDeniedException()
         }
 
+        const manager = injectedRunner ? injectedRunner.manager : this.orm.manager;
+
         const automation = new ApplicationAutomation();
         automation.internalName = data.internalName;
-        automation.application = await this.applicationsService.getApplicationById(applicationId);
+        automation.application = await this.applicationsService.getApplicationById(applicationId, injectedRunner);
         automation.flowNodes = [];
 
-        return await this.orm.manager.getRepository(ApplicationAutomation)
+        return await manager.getRepository(ApplicationAutomation)
             .save(automation);
     }
 
@@ -552,5 +556,118 @@ export default class ApplicationAutomationsService {
 
         await manager.getRepository(ApplicationAutomation)
             .remove(automation);
+    }
+
+    public async createDefaultAutomations(
+        authenticatedUser: User | null,
+        applicationId: string,
+        emailVerificationNotificationTemplateId: string,
+        injectedRunner?: QueryRunner,
+    ): Promise<ApplicationAutomation[]> {
+        let runner = injectedRunner;
+        if (!runner) {
+            runner = this.orm.createQueryRunner();
+            await runner.connect();
+            await runner.startTransaction('READ UNCOMMITTED');
+        }
+
+        return await runInTransaction(
+            'ApplicationAutomationsService::createDefaultAutomations',
+            {runner, isInjectedRunner: Boolean(injectedRunner)},
+            ({runner: runnerInTransaction}) => {
+                return this.createDefaultAutomationsWithRunner(
+                    authenticatedUser,
+                    applicationId,
+                    emailVerificationNotificationTemplateId,
+                    runnerInTransaction,
+                );
+            },
+        );
+    }
+
+    private async createDefaultAutomationsWithRunner(
+        authenticatedUser: User | null,
+        applicationId: string,
+        emailVerificationNotificationTemplateId: string,
+        runner: QueryRunner,
+    ): Promise<ApplicationAutomation[]> {
+        return waitForAllPromises([
+            this.createDefaultEmailVerificationAutomation(
+                authenticatedUser,
+                applicationId,
+                emailVerificationNotificationTemplateId,
+                runner,
+            ),
+        ]);
+    }
+
+    private async createDefaultEmailVerificationAutomation(
+        authenticatedUser: User | null,
+        applicationId: string,
+        notificationTemplateId: string,
+        runner: QueryRunner,
+    ): Promise<ApplicationAutomation> {
+        const automation = await this.create(
+            authenticatedUser,
+            applicationId,
+            {
+                internalName: 'Send E-Mail Verification Link',
+            },
+            runner,
+        );
+
+        return await this.updateWithRunner(
+            authenticatedUser,
+            {applicationId, automationId: automation.id},
+            {
+                internalName: automation.internalName,
+                flowNodes: [
+                    {
+                        id: 'on_user_create',
+                        type: ApplicationAutomationFlowNodeType.User_Created,
+                        configValues: [],
+                        parentId: null,
+                    },
+                    {
+                        id: 'load_notification_template',
+                        type: ApplicationAutomationFlowNodeType.NotificationTemplate_Load,
+                        configValues: [{
+                            key: 'templateId',
+                            value: notificationTemplateId,
+                        }],
+                        parentId: 'on_user_create',
+                    },
+                    {
+                        id: 'map_payload',
+                        type: ApplicationAutomationFlowNodeType.Automation_MapPayload,
+                        configValues: [
+                            {
+                                key: 'id',
+                                value: 'userId',
+                            },
+                            {
+                                key: 'subject',
+                                value: 'notification.subject',
+                            },
+                            {
+                                key: 'body',
+                                value: 'notification.body',
+                            },
+                        ],
+                        parentId: 'load_notification_template',
+                    },
+                    {
+                        id: 'send_email',
+                        type: ApplicationAutomationFlowNodeType.Notifications_Send,
+                        configValues: [{
+                            key: 'notificationMedium',
+                            value: ApplicationNotificationMedium.Email,
+                        }],
+                        parentId: 'map_payload',
+                    },
+                ],
+            },
+            runner,
+        );
     }
 }
