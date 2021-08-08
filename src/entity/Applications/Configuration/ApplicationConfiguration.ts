@@ -1,5 +1,6 @@
 import {Column, CreateDateColumn, Entity, OneToOne, PrimaryColumn, UpdateDateColumn} from 'typeorm';
 import Application from '../Application';
+import ApplicationConfigurationEmail from './E-Mail/ApplicationConfigurationEmail';
 
 @Entity()
 export default class ApplicationConfiguration {
@@ -17,4 +18,7 @@ export default class ApplicationConfiguration {
 
     @Column({default: true})
     public loginRequiresValidEmail: boolean;
+
+    @Column(() => ApplicationConfigurationEmail)
+    public email: ApplicationConfigurationEmail;
 }

@@ -1,5 +1,5 @@
 import {Inject, InjectorService, OnInit, Service} from '@tsed/di';
-import {DEFAULT_DB_CONNECTION} from '../connections/DefaultConnection';
+import {DEFAULT_DB_CONNECTION} from '../shared-providers/defaultDBConnection';
 import Application from '../../entity/Applications/Application';
 import ApplicationNotFoundError from './errors/ApplicationNotFoundError';
 import User from '../../entity/Users/User';
@@ -15,6 +15,7 @@ import ApplicationCollectionsService from './Collections/ApplicationCollectionsS
 import ApplicationAutomationsService from './Automations/ApplicationAutomationsService';
 import UsersService from '../Users/UsersService';
 import ApplicationNotificationTemplatesService from './Notifications/Templates/ApplicationNotificationTemplatesService';
+import EmailHandler from './Notifications/Handler/EmailHandler';
 
 export interface ApplicationConfigurationChangePayload {
     loginRequiresValidEmail?: boolean;
@@ -36,11 +37,14 @@ export default class ApplicationsService implements OnInit {
 
     @Inject(InjectorService)
     private injector!: InjectorService;
+    private readonly emailHandler: EmailHandler;
 
     public constructor(
         @Inject(DEFAULT_DB_CONNECTION) orm: DEFAULT_DB_CONNECTION,
+        emailHandler: EmailHandler,
     ) {
         this.orm = orm;
+        this.emailHandler = emailHandler;
     }
 
     public $onInit(): void {
@@ -67,7 +71,6 @@ export default class ApplicationsService implements OnInit {
         authenticatedUser: User | null,
         data: CreatePayload,
     ): Promise<Application> {
-
         const runner = this.orm.createQueryRunner();
         await runner.connect();
         await runner.startTransaction('READ UNCOMMITTED');
@@ -97,9 +100,20 @@ export default class ApplicationsService implements OnInit {
 
         const manager = runner.manager;
 
+        await this.emailHandler.verifyConfigurationAndCreateTransport(data.configuration.email);
+
         const configuration = await manager.getRepository(ApplicationConfiguration)
             .save({
                 loginRequiresValidEmail: true,
+                email: {
+                    host: data.configuration.email.host,
+                    port: data.configuration.email.port,
+                    ssl: data.configuration.email.ssl,
+                    authUser: data.configuration.email.authUser,
+                    authPassword: data.configuration.email.authPassword,
+                    fromName: data.configuration.email.fromName,
+                    fromAddress: data.configuration.email.fromAddress,
+                },
             });
 
         const application = await manager.getRepository(Application)
@@ -308,5 +322,8 @@ export default class ApplicationsService implements OnInit {
         }
 
         await waitForAllPromises<unknown>(promises);
+
+        await runner.manager.getRepository(Application)
+            .remove(application);
     }
 }

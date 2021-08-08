@@ -1,4 +1,5 @@
 import User from '../../../entity/Users/User';
+import Application from '../../../entity/Applications/Application';
 
 export interface NotificationPayload {
     subject: string;
@@ -6,5 +7,5 @@ export interface NotificationPayload {
 }
 
 export interface NotificationHandler {
-    send(user: User, notification: NotificationPayload): Promise<void>
+    send(application: Application, user: User, notification: NotificationPayload): Promise<void>
 }

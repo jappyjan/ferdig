@@ -1,31 +1,92 @@
 import {NotificationHandler, NotificationPayload} from '../NotificationHandler';
 import User from '../../../../entity/Users/User';
-import {Constant} from '@tsed/common';
 import {Service} from '@tsed/di';
-import {createTransport, Transporter, TransportOptions} from 'nodemailer';
-import SMTPTransport, {Options as SMTPTransportOptions} from 'nodemailer/lib/smtp-transport';
+import {createTransport, Transporter} from 'nodemailer';
+import ApplicationConfigurationEmail
+    from '../../../../entity/Applications/Configuration/E-Mail/ApplicationConfigurationEmail';
+import Application from '../../../../entity/Applications/Application';
+import {$log} from '@tsed/common';
+import {LoggerLevel} from 'nodemailer/lib/shared';
+import {Const} from '@tsed/schema';
+import {emailConfig} from '../../../../config/sub-configs/email';
 
 @Service()
 export default class EmailHandler implements NotificationHandler {
-    @Constant('email')
-    private readonly transportOptions: SMTPTransportOptions & TransportOptions;
-    private transporter: Transporter<SMTPTransport.SentMessageInfo>;
+    @Const('email')
+    private config!: typeof emailConfig;
 
-    // noinspection JSUnusedGlobalSymbols
-    public async $onInit(): Promise<void> {
-        this.transporter = createTransport({
-            ...this.transportOptions,
-            debug: true,
+    public async verifyConfigurationAndCreateTransport(config: ApplicationConfigurationEmail): Promise<Transporter> {
+        let auth: undefined | { user: string, pass: string } = undefined;
+        if (config.authUser && config.authPassword) {
+            auth = {
+                user: config.authUser,
+                pass: config.authPassword,
+            };
+        }
+
+        let host = config.host;
+        let port = config.port;
+        let ssl = config.ssl;
+
+        if (this.config.useMailcatcher) {
+            host = 'localhost';
+            port = 1025;
+            auth = undefined;
+            ssl = false;
+        }
+
+        const transporter = createTransport({
+            host: host,
+            port: port,
+            secure: ssl,
+            auth,
+            from: {
+                name: config.fromName,
+                address: config.fromAddress,
+            },
+            logger: {
+                info(...params: unknown[]) {
+                    $log.info(...params);
+                },
+                warn(...params: unknown[]) {
+                    $log.warn(...params);
+                },
+                error(...params: unknown[]) {
+                    $log.error(...params);
+                },
+                debug(...params: unknown[]) {
+                    $log.debug(...params);
+                },
+                trace(...params: unknown[]) {
+                    $log.trace(...params);
+                },
+                fatal(...params: unknown[]) {
+                    $log.fatal(...params);
+                },
+                level(level: LoggerLevel) {
+                    $log.level = level;
+                }
+            },
+            debug: this.config.debug,
         });
-        await this.transporter.verify();
+
+        await transporter.verify();
+
+        return transporter;
     }
 
-    public async send(user: User, notification: NotificationPayload): Promise<void> {
-        await this.transporter.sendMail({
-            to: user.email,
-            subject: notification.subject,
-            text: notification.body,
-            html: notification.body,
-        });
+    public async send(application: Application, user: User, notification: NotificationPayload): Promise<void> {
+        try {
+            const transporter = await this.verifyConfigurationAndCreateTransport(application.configuration.email);
+
+            await transporter.sendMail({
+                to: user.email,
+                subject: notification.subject,
+                text: notification.body,
+                html: notification.body,
+            });
+        } catch (e) {
+            throw e;
+        }
     }
 }

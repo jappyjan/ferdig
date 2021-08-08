@@ -7,9 +7,10 @@ import ApplicationCollectionDocument, {
     DocumentAsObjectType,
     DocumentAsObjectValueType,
 } from '../../../../entity/Applications/Collections/ApplicationCollectionDocument';
-import {DEFAULT_DB_CONNECTION} from '../../../connections/DefaultConnection';
+import {DEFAULT_DB_CONNECTION} from '../../../shared-providers/defaultDBConnection';
 import TooManyFiltersError from './errors/TooManyFiltersError';
-import ApplicationCollectionDocumentsAccessPermissionsService from './Permissions/ApplicationCollectionDocumentsAccessPermissionsService';
+import ApplicationCollectionDocumentsAccessPermissionsService
+    from './Permissions/ApplicationCollectionDocumentsAccessPermissionsService';
 import ApplicationCollectionDocumentProperty
     from '../../../../entity/Applications/Collections/ApplicationCollectionDocumentProperty';
 import ApplicationCollection from '../../../../entity/Applications/Collections/ApplicationCollection';
@@ -27,6 +28,7 @@ import UsersService from '../../../Users/UsersService';
 import {validateAuthJwt} from '../../../../utils/validate-auth-jwt';
 import {documentToObject} from '../../../../entity/Applications/Collections/utils/document-to-object';
 import {runInTransaction, waitForAllPromises} from '../../../../utils/typeorm.utils';
+import {DEFAULT_MINIO_CONNECTION} from '../../../shared-providers/defaultMinioConnection';
 
 export interface DocumentIdentifier extends CollectionIdentifier {
     documentId: string;
@@ -47,6 +49,7 @@ export default class ApplicationCollectionDocumentsService {
     private readonly permissionsService: ApplicationCollectionDocumentsAccessPermissionsService;
     private readonly collectionsService: ApplicationCollectionsService;
     private readonly clientToApplicationMapping: Record<string, Array<{ socket: Socket, user: User }>>;
+    private readonly minio: DEFAULT_MINIO_CONNECTION;
 
     // noinspection JSMethodCanBeStatic
     private getDocumentBaseQuery(manager: EntityManager) {
@@ -61,6 +64,7 @@ export default class ApplicationCollectionDocumentsService {
     public constructor(
         @IO io: Server,
         @Inject(DEFAULT_DB_CONNECTION) orm: DEFAULT_DB_CONNECTION,
+        @Inject(DEFAULT_MINIO_CONNECTION) minio: DEFAULT_MINIO_CONNECTION,
         usersService: UsersService,
         collectionsAccessPermissionsService: ApplicationCollectionDocumentsAccessPermissionsService,
         collectionsService: ApplicationCollectionsService,
@@ -71,6 +75,7 @@ export default class ApplicationCollectionDocumentsService {
         this.usersService = usersService;
         this.permissionsService = collectionsAccessPermissionsService;
         this.collectionsService = collectionsService;
+        this.minio = minio;
     }
 
     // noinspection JSUnusedGlobalSymbols

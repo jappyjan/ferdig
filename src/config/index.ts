@@ -4,6 +4,7 @@ import '@tsed/swagger';
 import {loggerConfig, passportConfig, socketIoConfig, swaggerConfig, typeormConfig} from './sub-configs';
 import {eventEmitterConfig} from './sub-configs/event-emitter';
 import {agendaConfig} from './sub-configs/agenda';
+import {minioConfig} from './sub-configs/minio';
 import {emailConfig} from './sub-configs/email';
 
 const {version} = require('../../package.json');
@@ -19,6 +20,7 @@ export const config: Partial<TsED.Configuration> = {
     socketIO: socketIoConfig,
     eventEmitter: eventEmitterConfig,
     agenda: agendaConfig,
+    minio: minioConfig,
     email: emailConfig,
     applications: {
         collections: {

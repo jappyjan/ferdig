@@ -2,7 +2,7 @@ import {Inject, InjectorService, OnInit, Service} from '@tsed/di';
 import ApplicationAutomationsService from '../../Automations/ApplicationAutomationsService';
 import ApplicationNotificationTemplate
     from '../../../../entity/Applications/Notifications/Templates/ApplicationNotificationTemplate';
-import {DEFAULT_DB_CONNECTION} from '../../../connections/DefaultConnection';
+import {DEFAULT_DB_CONNECTION} from '../../../shared-providers/defaultDBConnection';
 import NotificationTemplateNotFoundError from './Errors/NotificationTemplateNotFoundError';
 import AutomationPayloadError from '../../Automations/Errors/AutomationPayloadError';
 import {ApplicationAutomationFlowNodeType} from '../../../../entity/Applications/Automations/ApplicationAutomationFlowNode';
@@ -44,7 +44,7 @@ export default class ApplicationNotificationTemplatesService implements OnInit {
             ApplicationAutomationFlowNodeType.NotificationTemplate_Load,
             async (
                 ctx,
-                {applicationId, payload, configuration},
+                {application, payload, configuration},
             ) => {
                 const configTemplateId = configuration.find((c) => c.key === 'templateId')?.value;
                 const templateId = payload.templateId || configTemplateId;
@@ -57,7 +57,7 @@ export default class ApplicationNotificationTemplatesService implements OnInit {
 
                 const template = await this.getTemplateWithoutAuthCheck(
                     {
-                        applicationId,
+                        applicationId: application.id,
                         templateId,
                     },
                     ctx.runner,

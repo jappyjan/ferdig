@@ -1,4 +1,4 @@
-import {DEFAULT_DB_CONNECTION} from '../../connections/DefaultConnection';
+import {DEFAULT_DB_CONNECTION} from '../../shared-providers/defaultDBConnection';
 import Application from '../../../entity/Applications/Application';
 import ApplicationCollection from '../../../entity/Applications/Collections/ApplicationCollection';
 import CollectionNotFoundError from './errors/CollectionNotFoundError';

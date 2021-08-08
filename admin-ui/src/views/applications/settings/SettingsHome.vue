@@ -130,6 +130,7 @@ export default class SettingsHome extends Vue {
           .remove(this.activeApplication.id);
 
       this.$store.commit('applications/remove', this.activeApplication.id);
+      this.$store.commit('applications/setActiveApplication', null);
       await this.$router.push('/');
     } catch (e) {
       await errorMessage(e);

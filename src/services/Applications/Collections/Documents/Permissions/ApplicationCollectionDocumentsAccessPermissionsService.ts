@@ -2,7 +2,7 @@ import {Inject, Service} from '@tsed/di';
 import {QueryRunner} from 'typeorm';
 import {Const} from '@tsed/schema';
 import resolvePath from 'object-resolve-path';
-import {DEFAULT_DB_CONNECTION} from '../../../../connections/DefaultConnection';
+import {DEFAULT_DB_CONNECTION} from '../../../../shared-providers/defaultDBConnection';
 import UsersService from '../../../../Users/UsersService';
 import ApplicationCollectionDocument
     from '../../../../../entity/Applications/Collections/ApplicationCollectionDocument';
@@ -140,8 +140,8 @@ export default class ApplicationCollectionDocumentsAccessPermissionsService {
             return false;
         }
 
-        const rightSideValue = this.parseValueDescriptor(authenticatedUser, rule.rightSide, document);
-        const leftSideValue = this.parseValueDescriptor(authenticatedUser, rule.leftSide, document);
+        const rightSideValue = this.parseValueDescriptor(authenticatedUser, rule.rightSide ?? '', document);
+        const leftSideValue = this.parseValueDescriptor(authenticatedUser, rule.leftSide ?? '', document);
 
         let hasPermissionForCurrentRule: boolean;
         switch (rule.operator) {

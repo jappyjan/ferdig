@@ -11,6 +11,8 @@ import ApplicationCollectionsListPayloadModel from './Models/ApplicationCollecti
 import ApplicationCollectionsUpdatePayloadModel from './Models/ApplicationCollectionsUpdatePayloadModel';
 import ApplicationCollectionColumnsController from './Columns/ApplicationCollectionColumnsController';
 import {CrudController} from '../../CrudController';
+import ApplicationCollection from '../../../entity/Applications/Collections/ApplicationCollection';
+import {ListResult} from '../../../services/shared-types/ListResult';
 
 @Controller({
     path: '/:applicationId/collections',
@@ -19,7 +21,7 @@ import {CrudController} from '../../CrudController';
         ApplicationCollectionColumnsController,
     ],
 })
-export default class ApplicationCollectionsController implements CrudController<ApplicationCollectionModel> {
+export default class ApplicationCollectionsController implements CrudController<ApplicationCollection> {
     private readonly collectionsService: ApplicationCollectionsService;
 
     public constructor(collectionsService: ApplicationCollectionsService) {
@@ -56,7 +58,7 @@ export default class ApplicationCollectionsController implements CrudController<
         @PathParams('applicationId') applicationId: string,
         @PathParams('collectionId') collectionId: string,
         @Req() {user: authenticatedUser}: Req,
-    ): Promise<ApplicationCollectionModel> {
+    ): Promise<ApplicationCollection> {
         return await this.collectionsService.getCollection(
             authenticatedUser as User || null,
             {
@@ -74,7 +76,7 @@ export default class ApplicationCollectionsController implements CrudController<
         @PathParams('applicationId') applicationId: string,
         @BodyParams() params: ApplicationCollectionsCreatePayloadModel,
         @Req() {user: authenticatedUser}: Req,
-    ): Promise<ApplicationCollectionModel> {
+    ): Promise<ApplicationCollection> {
         return await this.collectionsService.createCollection(
             authenticatedUser as User || null,
             applicationId,
@@ -91,7 +93,7 @@ export default class ApplicationCollectionsController implements CrudController<
         @PathParams('collectionId') collectionId: string,
         @BodyParams() params: ApplicationCollectionsUpdatePayloadModel,
         @Req() {user: authenticatedUser}: Req,
-    ): Promise<ApplicationCollectionModel> {
+    ): Promise<ApplicationCollection> {
         return await this.collectionsService.updateCollection(
             authenticatedUser as User || null,
             {
@@ -110,7 +112,7 @@ export default class ApplicationCollectionsController implements CrudController<
         @PathParams('applicationId') applicationId: string,
         @BodyParams() params: ApplicationCollectionsListPayloadModel,
         @Req() {user: authenticatedUser}: Req,
-    ): Promise<ApplicationCollectionsListResultModel> {
+    ): Promise<ListResult<ApplicationCollection>> {
         return await this.collectionsService.list(
             (authenticatedUser as User) || null,
             applicationId,

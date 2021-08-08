@@ -1,6 +1,6 @@
 import {Inject, Service} from '@tsed/di';
 import UsersService from '../../Users/UsersService';
-import {DEFAULT_DB_CONNECTION} from '../../connections/DefaultConnection';
+import {DEFAULT_DB_CONNECTION} from '../../shared-providers/defaultDBConnection';
 import UserNotificationSettings from '../../../entity/Users/UserNotificationSettings';
 import {NotificationPayload} from './NotificationHandler';
 import EmailHandler from './Handler/EmailHandler';
@@ -11,11 +11,8 @@ import ApplicationAutomationsService from '../Automations/ApplicationAutomations
 import AutomationPayloadError from '../Automations/Errors/AutomationPayloadError';
 import {QueryRunner} from 'typeorm';
 import {ApplicationNotificationMedium} from './ApplicationNotificationMedium';
-
-export interface UserIdentifier {
-    userId: string;
-    applicationId: string;
-}
+import Application from '../../../entity/Applications/Application';
+import {UserIdentifier} from '../../Users/UserIdentifier';
 
 @Service()
 export default class ApplicationNotificationsService {
@@ -46,7 +43,7 @@ export default class ApplicationNotificationsService {
             async (
                 ctx,
                 {
-                    applicationId,
+                    application,
                     getVal,
                 },
             ): Promise<void> => {
@@ -72,9 +69,10 @@ export default class ApplicationNotificationsService {
                 }
 
                 await this.sendNotification(
+                    application,
                     {
                         userId,
-                        applicationId,
+                        applicationId: application.id,
                     },
                     notification,
                     [notificationMedium],
@@ -106,18 +104,21 @@ export default class ApplicationNotificationsService {
     }
 
     public async sendNotification(
+        application: Application,
         userIdentifier: UserIdentifier,
         payload: NotificationPayload,
         allowedMedium: ApplicationNotificationMedium[],
         injectedRunner?: QueryRunner,
     ): Promise<void>
     public async sendNotification(
+        application: Application,
         user: User,
         payload: NotificationPayload,
         allowedMedium: ApplicationNotificationMedium[],
         injectedRunner?: QueryRunner,
     ): Promise<void>
     public async sendNotification(
+        application: Application,
         userOrIdentifier: User | UserIdentifier,
         payload: NotificationPayload,
         allowedMedium: ApplicationNotificationMedium[],
@@ -152,11 +153,11 @@ export default class ApplicationNotificationsService {
             allowedMedium.includes(ApplicationNotificationMedium.Push) &&
             notificationSettings.wantsPushNotifications
         ) {
-            return await this.pushNotificationsHandler.send(user, payload);
+            return await this.pushNotificationsHandler.send(application, user, payload);
         }
 
         if (allowedMedium.includes(ApplicationNotificationMedium.Email)) {
-            await this.emailHandler.send(user, payload);
+            await this.emailHandler.send(application, user, payload);
         }
     }
 }

@@ -1,5 +1,6 @@
 import {Format, JsonFormatTypes, Required} from '@tsed/schema';
 import ApplicationConfiguration from '../../../entity/Applications/Configuration/ApplicationConfiguration';
+import ApplicationConfigurationEmailModel from './ApplicationConfigurationEmailModel';
 
 export default class ApplicationConfigurationModel implements Partial<ApplicationConfiguration> {
     @Required()
@@ -18,4 +19,7 @@ export default class ApplicationConfigurationModel implements Partial<Applicatio
 
     @Required()
     loginRequiresValidEmail: boolean;
+
+    @Required()
+    email: ApplicationConfigurationEmailModel;
 }

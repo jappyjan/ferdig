@@ -7,14 +7,15 @@ import ApplicationCollectionColumnModel from './Models/ApplicationCollectionColu
 import ApplicationCollectionColumnCreatePayloadModel from './Models/ApplicationCollectionColumnCreatePayloadModel';
 import ApplicationCollectionColumnUpdatePayloadModel from './Models/ApplicationCollectionColumnUpdatePayloadModel';
 import ApplicationCollectionColumnsListResultModel from './Models/ApplicationCollectionColumnsListResultModel';
-import {ApplicationCollectionColumnValueType} from '../../../../entity/Applications/Collections/ApplicationCollectionColumn';
+import ApplicationCollectionColumn, {ApplicationCollectionColumnValueType} from '../../../../entity/Applications/Collections/ApplicationCollectionColumn';
 import {CrudController} from '../../../CrudController';
+import {ListResult} from '../../../../services/shared-types/ListResult';
 
 @Controller({
     path: '/:collectionId/columns',
     children: [],
 })
-export default class ApplicationCollectionColumnsController implements CrudController<ApplicationCollectionColumnModel> {
+export default class ApplicationCollectionColumnsController implements CrudController<ApplicationCollectionColumn> {
     private readonly collectionsService: ApplicationCollectionsService;
 
     public constructor(collectionsService: ApplicationCollectionsService) {
@@ -29,7 +30,7 @@ export default class ApplicationCollectionColumnsController implements CrudContr
         @PathParams('collectionId') collectionId: string,
         @PathParams('columnId') columnId: string,
         @Req() {user: authenticatedUser}: Req,
-    ): Promise<ApplicationCollectionColumnModel> {
+    ): Promise<ApplicationCollectionColumn> {
         return await this.collectionsService.getColumn(
             authenticatedUser as User || null,
             {
@@ -49,7 +50,7 @@ export default class ApplicationCollectionColumnsController implements CrudContr
         @PathParams('collectionId') collectionId: string,
         @BodyParams() params: ApplicationCollectionColumnCreatePayloadModel,
         @Req() {user: authenticatedUser}: Req,
-    ): Promise<ApplicationCollectionColumnModel> {
+    ): Promise<ApplicationCollectionColumn> {
         return await this.collectionsService.addColumn(
             authenticatedUser as User || null,
             {
@@ -74,7 +75,7 @@ export default class ApplicationCollectionColumnsController implements CrudContr
         @PathParams('columnId') columnId: string,
         @BodyParams() params: ApplicationCollectionColumnUpdatePayloadModel,
         @Req() {user: authenticatedUser}: Req,
-    ): Promise<ApplicationCollectionColumnModel> {
+    ): Promise<ApplicationCollectionColumn> {
         return await this.collectionsService.updateColumn(
             authenticatedUser as User || null,
             {
@@ -120,7 +121,7 @@ export default class ApplicationCollectionColumnsController implements CrudContr
         @PathParams('applicationId') applicationId: string,
         @PathParams('collectionId') collectionId: string,
         @Req() {user: authenticatedUser}: Req,
-    ): Promise<ApplicationCollectionColumnsListResultModel> {
+    ): Promise<ListResult<ApplicationCollectionColumn>> {
         return await this.collectionsService.listColumns(
             (authenticatedUser as User) || null,
             {

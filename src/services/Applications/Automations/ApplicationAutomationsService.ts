@@ -1,5 +1,5 @@
 import {Inject, InjectorService, Service} from '@tsed/di';
-import {DEFAULT_DB_CONNECTION} from '../../connections/DefaultConnection';
+import {DEFAULT_DB_CONNECTION} from '../../shared-providers/defaultDBConnection';
 import User from '../../../entity/Users/User';
 import {ListPayload} from './ListPayload';
 import {ListResult} from '../../shared-types/ListResult';
@@ -25,6 +25,7 @@ import resolvePath from 'object-resolve-path';
 import {runInTransaction, waitForAllPromises} from '../../../utils/typeorm.utils';
 import NoConsoleAccessError from '../../Auth/errors/NoConsoleAccessError';
 import {ApplicationNotificationMedium} from '../Notifications/ApplicationNotificationMedium';
+import Application from '../../../entity/Applications/Application';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -40,7 +41,7 @@ export type AutomationNodeHandler = (
         log: (level: ApplicationAutomationFlowNodeLogLevel, message: string) => void,
     },
     data: {
-        applicationId: string,
+        application: Application,
         configuration: ApplicationAutomationFlowNodeConfigValue[],
         payload: PayloadType,
         getVal: <T extends AutomationHandlerResult, K extends keyof AutomationHandlerResult>(key: K) => T[K],
@@ -407,6 +408,8 @@ export default class ApplicationAutomationsService {
             });
         }
 
+        const application = await this.applicationsService.getApplicationById(identifier.applicationId, runner);
+
         const handleNode = async (node: ApplicationAutomationFlowNode, payloadForNode: AutomationHandlerResult): Promise<void> => {
             const log = makeLogger(node, payloadForNode);
 
@@ -426,7 +429,7 @@ export default class ApplicationAutomationsService {
                             log,
                         },
                         {
-                            applicationId: identifier.applicationId,
+                            application,
                             payload: payloadForNode,
                             configuration: node.configValues,
                             getVal: <T extends AutomationHandlerResult, K extends keyof AutomationHandlerResult>(key: K) => {
@@ -646,12 +649,8 @@ export default class ApplicationAutomationsService {
                                 value: 'userId',
                             },
                             {
-                                key: 'subject',
-                                value: 'notification.subject',
-                            },
-                            {
-                                key: 'body',
-                                value: 'notification.body',
+                                key: 'template',
+                                value: 'notification',
                             },
                         ],
                         parentId: 'load_notification_template',

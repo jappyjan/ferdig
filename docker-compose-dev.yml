@@ -1,9 +1,10 @@
-version: '3.3'
+version: '3.5'
 
 volumes:
   postgres:
   pgadmin:
   mongo:
+  minio:
 
 services:
   postgres:
@@ -16,8 +17,13 @@ services:
       service: mongo
       file: ./docker-compose.yml
 
-  mailhog:
-    image: mailhog/mailhog:latest
+  minio:
+    extends:
+      service: minio
+      file: ./docker-compose.yml
+
+  mail:
+    image: jeanberu/mailcatcher
     ports:
+      - 1080:1080
       - 1025:1025
-      - 8081:80

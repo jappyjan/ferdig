@@ -5,6 +5,9 @@ import User from '../../../../../entity/Users/User';
 import EmailAlreadyRegisteredError from './Errors/EmailAlreadyRegisteredError';
 import UsersService from '../../../../Users/UsersService';
 import {CreatePayload} from '../../../../Users/CreatePayload';
+import ApplicationsService from '../../../../Applications/ApplicationsService';
+
+type SignupData = Omit<CreatePayload, 'application'> & { applicationId: string };
 
 @Protocol({
     name: 'local-signup',
@@ -16,12 +19,17 @@ import {CreatePayload} from '../../../../Users/CreatePayload';
 })
 export class LoginLocalSignupProtocol implements OnVerify {
     private readonly usersService: UsersService;
+    private readonly applicationsService: ApplicationsService;
 
-    constructor(usersService: UsersService) {
+    constructor(
+        usersService: UsersService,
+        applicationsService: ApplicationsService,
+    ) {
         this.usersService = usersService;
+        this.applicationsService = applicationsService;
     }
 
-    public async $onVerify(@Req() request: Req, @BodyParams() userData: CreatePayload): Promise<User> {
+    public async $onVerify(@Req() request: Req, @BodyParams() userData: SignupData): Promise<User> {
         const {email} = userData;
         const found = await this.usersService.getOneWithoutAuthCheck({email});
 
@@ -29,6 +37,12 @@ export class LoginLocalSignupProtocol implements OnVerify {
             throw new EmailAlreadyRegisteredError();
         }
 
-        return await this.usersService.createUser(null, userData);
+        const application = await this.applicationsService.getApplicationById(userData.applicationId);
+
+        return await this.usersService.createUser(null, {
+            email: userData.email,
+            password: userData.password,
+            application,
+        });
     }
 }
