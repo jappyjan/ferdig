@@ -149,6 +149,8 @@ export default class CollectionDocumentEditorBottomSheet extends Vue {
   private showError = false;
   private isDeleting = false;
 
+  private fileName = filename;
+
   @Watch('document', {immediate: true, deep: true})
   private syncProp() {
     this.showError = false;
@@ -244,8 +246,6 @@ export default class CollectionDocumentEditorBottomSheet extends Vue {
     }
   }
 
-  private fileName = filename;
-
   private getDatePart(column: FerdigApplicationCollectionColumn, lang?: string) {
     const date = this.documentVal[column.internalName] as Date | null;
 
@@ -314,7 +314,9 @@ export default class CollectionDocumentEditorBottomSheet extends Vue {
   }
 
   private onSetFile(column: FerdigApplicationCollectionColumn, event: InputEvent) {
-    this.documentVal[column.internalName] = (event.target as HTMLInputElement).files?.item(0) ?? null;
+    const file = (event.target as HTMLInputElement).files?.item(0) ?? null;
+    Vue.set(this.documentVal, column.internalName, file);
+    this.$forceUpdate();
 
     this.$nextTick(() => {
       const input = this.$refs['fileInput-' + column.internalName] as HTMLInputElement;
