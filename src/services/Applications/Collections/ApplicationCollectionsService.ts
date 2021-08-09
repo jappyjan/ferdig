@@ -427,6 +427,8 @@ export default class ApplicationCollectionsService {
             .andWhere('collection.id = :collectionId', {collectionId: identifier.collectionId})
             .andWhere('application.id = :applicationId', {applicationId: identifier.applicationId})
             .getMany();
+
+        // TODO: if property contains files, remove files from minio
         await manager.getRepository(ApplicationCollectionDocumentProperty)
             .remove(properties);
 

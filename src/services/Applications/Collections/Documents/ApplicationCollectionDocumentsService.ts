@@ -3,10 +3,7 @@ import {Brackets, EntityManager, QueryRunner, WhereExpression} from 'typeorm';
 import {$log, Constant} from '@tsed/common';
 import ApplicationCollectionsService from '../ApplicationCollectionsService';
 import ApplicationCollectionColumn, {ApplicationCollectionColumnValueType} from '../../../../entity/Applications/Collections/ApplicationCollectionColumn';
-import ApplicationCollectionDocument, {
-    DocumentAsObjectType,
-    DocumentAsObjectValueType,
-} from '../../../../entity/Applications/Collections/ApplicationCollectionDocument';
+import ApplicationCollectionDocument from '../../../../entity/Applications/Collections/ApplicationCollectionDocument';
 import {DEFAULT_DB_CONNECTION} from '../../../shared-providers/defaultDBConnection';
 import TooManyFiltersError from './errors/TooManyFiltersError';
 import ApplicationCollectionDocumentsAccessPermissionsService
@@ -27,21 +24,22 @@ import {IO, Server, Socket, SocketService} from '@tsed/socketio';
 import UsersService from '../../../Users/UsersService';
 import {validateAuthJwt} from '../../../../utils/validate-auth-jwt';
 import {documentToObject} from '../../../../entity/Applications/Collections/utils/document-to-object';
-import {runInTransaction, waitForAllPromises} from '../../../../utils/typeorm.utils';
-import {DEFAULT_MINIO_CONNECTION} from '../../../shared-providers/defaultMinioConnection';
-
-export interface DocumentIdentifier extends CollectionIdentifier {
-    documentId: string;
-}
-
-export interface CollectionDocumentUpdatePayload {
-    [key: string]: DocumentAsObjectValueType;
-}
+import {OnCommitAction, runInTransaction, waitForAllPromises} from '../../../../utils/typeorm.utils';
+import {DEFAULT_MINIO_CONNECTION, MinioFile} from '../../../shared-providers/defaultMinioConnection';
+import {CollectionColumnIdentifier} from '../CollectionColumnIdentifier';
+import {DocumentCreateAndUpdateData} from './DocumentCreateAndUpdateData';
+import {DocumentIdentifier} from './DocumentIdentifier';
+import {ColumnFileIdentifier} from './ColumnFileIdentifier';
+import {Readable} from 'stream';
+import UnknownFileError from './errors/UnknownFileError';
 
 @SocketService('applications/collections/documents')
 export default class ApplicationCollectionDocumentsService {
     @Constant('collections.listDocuments.maxFilters')
     private readonly listDocumentsMaxFilters: number;
+
+    @Constant('minio.bucket')
+    private readonly bucketName: string;
 
     protected readonly io: Server;
     private readonly orm: DEFAULT_DB_CONNECTION;
@@ -260,12 +258,18 @@ export default class ApplicationCollectionDocumentsService {
     }
 
     // noinspection JSMethodCanBeStatic
-    private documentPropertyToString(column: ApplicationCollectionColumn, value: unknown) {
+    private async documentPropertyToString(
+        applicationId: string,
+        collectionId: string,
+        documentId: string,
+        column: ApplicationCollectionColumn,
+        value: unknown,
+    ) {
         let valueAsString = '' + value;
 
         switch (column.valueType) {
             case ApplicationCollectionColumnValueType.Boolean:
-                const valueAsBoolean = Boolean(value);
+                const valueAsBoolean = (value as string).toLowerCase() === 'true';
                 valueAsString = valueAsBoolean ? 'TRUE' : 'FALSE';
                 break;
 
@@ -289,14 +293,33 @@ export default class ApplicationCollectionDocumentsService {
                 }
                 valueAsString = valueAsDate.toISOString();
                 break;
+
+            case ApplicationCollectionColumnValueType.File:
+                valueAsString = await this.uploadDocumentPropertyFile({
+                    applicationId,
+                    collectionId,
+                    documentId,
+                    columnId: column.id,
+                }, value as MinioFile);
+                break;
         }
 
         return valueAsString;
     }
 
+    private async uploadDocumentPropertyFile(identifier: CollectionColumnIdentifier & { documentId: string }, file: MinioFile): Promise<string> {
+        const {applicationId, collectionId, documentId, columnId} = identifier;
+        const objectName = `/applications/${applicationId}/collections/${collectionId}/documents/${documentId}/columns/${columnId}/${file.originalName}`;
+
+        await this.minio.putObject(this.bucketName, objectName, file.data);
+
+        return objectName;
+    }
+
     // noinspection JSMethodCanBeStatic
     private async createDocumentProperty(
         runner: QueryRunner,
+        applicationId: string,
         collection: ApplicationCollection,
         document: ApplicationCollectionDocument,
         property: CreateDocumentPropertyPayload,
@@ -311,17 +334,19 @@ export default class ApplicationCollectionDocumentsService {
             throw new UnknownColumnError(property.internalName);
         }
 
+        const value = await this.documentPropertyToString(applicationId, collection.id, document.id, column, property.value);
+
         return runner.manager.getRepository(ApplicationCollectionDocumentProperty).save({
             document,
             column,
-            value: this.documentPropertyToString(column, property.value),
+            value,
         });
     }
 
     public async createDocument(
         authenticatedUser: User | null,
         collectionIdentifier: CollectionIdentifier,
-        documentData: DocumentAsObjectType,
+        documentData: DocumentCreateAndUpdateData,
         injectedRunner?: QueryRunner,
     ): Promise<ApplicationCollectionDocument> {
         let runner = injectedRunner;
@@ -348,7 +373,7 @@ export default class ApplicationCollectionDocumentsService {
     private async createDocumentWithRunner(
         authenticatedUser: User | null,
         collectionIdentifier: CollectionIdentifier,
-        documentData: DocumentAsObjectType,
+        documentData: DocumentCreateAndUpdateData,
         runner: QueryRunner,
     ): Promise<ApplicationCollectionDocument> {
         const manager = runner.manager;
@@ -373,19 +398,22 @@ export default class ApplicationCollectionDocumentsService {
                 values = [documentData[columnInternalName] as string];
             }
 
-            return waitForAllPromises(values.map((value) => {
-                return this.createDocumentProperty(
+            const createSingleProperty = async (value: string) => {
+                const property = await this.createDocumentProperty(
                     runner,
+                    collectionIdentifier.applicationId,
                     collection,
                     document,
                     {
                         internalName: columnInternalName,
                         value,
                     },
-                ).then((property) => {
-                    document.properties.push(property);
-                });
-            }))
+                );
+
+                document.properties.push(property);
+            };
+
+            return waitForAllPromises(values.map(createSingleProperty));
         }));
 
         await this.permissionsService.hasPermissionOrFails(
@@ -438,7 +466,7 @@ export default class ApplicationCollectionDocumentsService {
     public async updateDocument(
         authenticatedUser: User | null,
         identifier: DocumentIdentifier,
-        data: Partial<CollectionDocumentUpdatePayload>,
+        data: DocumentCreateAndUpdateData,
         injectedRunner?: QueryRunner,
     ): Promise<ApplicationCollectionDocument> {
         let runner = injectedRunner;
@@ -451,12 +479,13 @@ export default class ApplicationCollectionDocumentsService {
         return await runInTransaction(
             'ApplicationCollectionDocumentsService::updateDocument',
             {runner, isInjectedRunner: Boolean(injectedRunner)},
-            ({runner: runnerInTransaction}) => {
+            ({runner: runnerInTransaction, onCommit}) => {
                 return this.updateDocumentWithRunner(
                     authenticatedUser,
                     identifier,
                     data,
                     runnerInTransaction,
+                    onCommit,
                 );
             },
         )
@@ -465,8 +494,9 @@ export default class ApplicationCollectionDocumentsService {
     private async updateDocumentWithRunner(
         authenticatedUser: User | null,
         identifier: DocumentIdentifier,
-        data: Partial<CollectionDocumentUpdatePayload>,
+        data: DocumentCreateAndUpdateData,
         runner: QueryRunner,
+        onCommit: (action: OnCommitAction) => void,
     ): Promise<ApplicationCollectionDocument> {
         const manager = runner.manager;
 
@@ -481,22 +511,21 @@ export default class ApplicationCollectionDocumentsService {
             const propertyIndex = document.properties.findIndex((prop) => prop.column.internalName === internalName);
             let property = document.properties[propertyIndex];
 
-            if (!property) {
-                property = await this.createDocumentProperty(
-                    runner,
-                    collection,
-                    document,
-                    {
-                        value: data[internalName] as string,
-                        internalName,
-                    },
-                );
-                document.properties.push(property);
-            } else {
-                property.value = this.documentPropertyToString(property.column, data[internalName]);
-                document.properties[propertyIndex] = await manager.getRepository(ApplicationCollectionDocumentProperty)
-                    .save(property);
+            if (property) {
+                await this.removeDocumentProperty(property, runner, onCommit);
             }
+
+            property = await this.createDocumentProperty(
+                runner,
+                identifier.applicationId,
+                collection,
+                document,
+                {
+                    value: data[internalName] as string,
+                    internalName,
+                },
+            );
+            document.properties.push(property);
         }
 
         const updateArrayProperty = async (internalName: string) => {
@@ -566,11 +595,12 @@ export default class ApplicationCollectionDocumentsService {
         return await runInTransaction(
             'ApplicationCollectionDocumentsService::removeDocument',
             {runner, isInjectedRunner: Boolean(injectedRunner)},
-            ({runner: runnerInTransaction}) => {
+            ({runner: runnerInTransaction, onCommit}) => {
                 return this.removeDocumentWithRunner(
                     authenticatedUser,
                     identifier,
                     runnerInTransaction,
+                    onCommit,
                 );
             },
         )
@@ -580,6 +610,7 @@ export default class ApplicationCollectionDocumentsService {
         authenticatedUser: User | null,
         identifier: DocumentIdentifier,
         runner: QueryRunner,
+        onCommit: (action: OnCommitAction) => void,
     ): Promise<void> {
         const manager = runner.manager;
 
@@ -588,8 +619,14 @@ export default class ApplicationCollectionDocumentsService {
 
         await this.permissionsService.hasPermissionOrFails(authenticatedUser, collection.writeAccessRule, document, runner);
 
-        await manager.getRepository(ApplicationCollectionDocumentProperty)
-            .remove(document.properties);
+        await waitForAllPromises(document.properties.map((property) => {
+            return this.removeDocumentProperty(
+                property,
+                runner,
+                onCommit,
+            )
+        }));
+
         await manager.getRepository(ApplicationCollectionDocument)
             .remove(document);
 
@@ -626,5 +663,34 @@ export default class ApplicationCollectionDocumentsService {
         }
 
         await waitForAllPromises(clients.map(emitToSingleClient));
+    }
+
+    private async removeDocumentProperty(
+        property: ApplicationCollectionDocumentProperty,
+        runner: QueryRunner,
+        onCommit: (action: OnCommitAction) => void,
+    ) {
+        if (property.column.valueType === ApplicationCollectionColumnValueType.File) {
+            onCommit(async () => {
+                await this.minio.removeObject(this.bucketName, property.value);
+            });
+        }
+
+        await runner.manager.getRepository(ApplicationCollectionDocumentProperty)
+            .remove(property);
+    }
+
+    public async getColumnFile(
+        authenticatedUser: User | null,
+        identifer: ColumnFileIdentifier,
+    ): Promise<Readable> {
+        const document = await this.getDocument(authenticatedUser, identifer);
+        const fileProperty = document.properties.find((property) => property.column.id === identifer.columnId);
+
+        if (!fileProperty) {
+            throw new UnknownFileError(identifer);
+        }
+
+        return await this.minio.getObject(this.bucketName, fileProperty.value);
     }
 }

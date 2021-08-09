@@ -19,6 +19,7 @@ export enum ApplicationCollectionColumnValueType {
     Number = 'number',
     Date = 'date',
     Boolean = 'boolean',
+    File = 'file'
 }
 
 @Entity()

@@ -6,6 +6,7 @@ import {eventEmitterConfig} from './sub-configs/event-emitter';
 import {agendaConfig} from './sub-configs/agenda';
 import {minioConfig} from './sub-configs/minio';
 import {emailConfig} from './sub-configs/email';
+import {multerConfig} from './sub-configs/multerConfig';
 
 const {version} = require('../../package.json');
 export const rootDir = join(__dirname, '..');
@@ -22,6 +23,7 @@ export const config: Partial<TsED.Configuration> = {
     agenda: agendaConfig,
     minio: minioConfig,
     email: emailConfig,
+    multer: multerConfig,
     applications: {
         collections: {
             documents: {

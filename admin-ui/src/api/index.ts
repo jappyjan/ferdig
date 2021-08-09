@@ -3,7 +3,7 @@ import {getEnvVar} from '../../../src/utils/env';
 
 let client: FerdigClient | null = null;
 
-export type GenericDocumentTypeTypes = number | Date | string | null | GenericDocumentTypeTypes[];
+export type GenericDocumentTypeTypes = number | Date | File | string | null | GenericDocumentTypeTypes[];
 export type GenericDocumentType = Record<string, GenericDocumentTypeTypes>;
 
 export function getFerdigClient(): FerdigClient {

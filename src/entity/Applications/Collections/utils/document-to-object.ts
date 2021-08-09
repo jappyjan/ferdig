@@ -21,7 +21,10 @@ export function documentToObject(document: ApplicationCollectionDocument): Docum
                 return value;
 
             case ApplicationCollectionColumnValueType.Boolean:
-                return Boolean(value);
+                return value === 'TRUE';
+
+            case ApplicationCollectionColumnValueType.File:
+                return value;
 
             default:
                 throw new Error(`unknown document column value type: ${valueType}`)

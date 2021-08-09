@@ -11,16 +11,23 @@ services:
     extends:
       file: ./docker-compose.yml
       service: postgres
+    ports:
+    - 5432:5432
 
   mongo:
     extends:
       service: mongo
       file: ./docker-compose.yml
+    ports:
+      - 27017:27017
 
   minio:
     extends:
       service: minio
       file: ./docker-compose.yml
+    ports:
+      - 9000:9000
+      - 9001:9001
 
   mail:
     image: jeanberu/mailcatcher

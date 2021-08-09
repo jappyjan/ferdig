@@ -26,7 +26,7 @@
           </v-flex>
         </v-layout>
 
-        <v-btn type="submit" hidden />
+        <v-btn type="submit" style="display: none" />
       </v-form>
 
       <!-- Access Control -->

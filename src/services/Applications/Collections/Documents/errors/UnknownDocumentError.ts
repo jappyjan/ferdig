@@ -1,6 +1,6 @@
-import {UnprocessableEntity} from '@tsed/exceptions';
+import {NotFound} from '@tsed/exceptions';
 
-export default class UnknownDocumentError extends UnprocessableEntity {
+export default class UnknownDocumentError extends NotFound {
     constructor(documentId: string) {
         super(`Unknown Document: ${documentId}`);
     }

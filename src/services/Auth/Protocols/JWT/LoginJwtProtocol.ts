@@ -10,7 +10,12 @@ import UsersService from '../../../Users/UsersService';
     name: 'jwt',
     useStrategy: Strategy,
     settings: {
-        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+        jwtFromRequest: req => {
+            const authHeader = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+            const authQuery = ExtractJwt.fromUrlQueryParameter('auth')(req);
+
+            return authHeader ?? authQuery;
+        },
         secretOrKey: getEnvVar('AUTH_JWT_SECRET', 'string'),
     },
 })

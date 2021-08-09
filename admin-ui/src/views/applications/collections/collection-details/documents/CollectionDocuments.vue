@@ -8,19 +8,40 @@
       </v-alert>
     </v-card-text>
     <v-data-table :headers="tableHeaders"
-                  :items="documents"
+                  :items="documentsForTableView"
                   :options.sync="tableOptions"
                   :loading="isLoadingDocuments"
                   disable-sort
-                  @click:row="document => $emit('click:document', document)"
+                  @click:row="tableDoc => $emit('click:document', documents.find((doc) => doc.id === tableDoc.id))"
                   class="pointer"
                   :server-items-length="totalItems"
+                  show-expand
+                  single-expand
     >
       <template v-slot:item.createdAt="{ item }">
         {{ item.createdAt.toLocaleString() }}
       </template>
       <template v-slot:item.updatedAt="{ item }">
         {{ item.updatedAt.toLocaleString() }}
+      </template>
+
+      <template v-slot:expanded-item="{ headers, item }">
+        <td :colspan="headers.length">
+          <v-container>
+            <template v-for="column in collection.columns">
+              <v-btn :key="column.id"
+                     v-if="column.valueType === 'file'"
+                     block
+                     color="primary"
+                     :href="fileUrl(column, item)"
+                     target="_blank"
+              >
+                <v-icon left>mdi-download</v-icon>
+                Open {{column.internalName}} ({{ fileName(item[column.internalName]) }})
+              </v-btn>
+            </template>
+          </v-container>
+        </td>
       </template>
     </v-data-table>
   </div>
@@ -31,13 +52,17 @@ import Vue from 'vue';
 import Component from 'vue-class-component';
 import {VuetifyDataTableOptions} from '@/shared-types/vuetify-data-table-options';
 import {
-  FerdigApplicationCollection,
+  FerdigApplicationCollection, FerdigApplicationCollectionColumn,
+  FerdigApplicationCollectionColumnValueType,
   FerdigCollectionDocumentDefaultProperties,
   FerdigListResult,
 } from '@ferdig/client-js';
 import {Prop, Watch} from 'vue-property-decorator';
 import {GenericDocumentType, getFerdigClient} from '@/api';
 import {BehaviorSubject} from 'rxjs';
+import {filename} from '@/utils/filename';
+import {getEnvVar} from '../../../../../../../src/utils/env';
+import {State} from 'vuex-class';
 
 @Component({})
 export default class CollectionDocuments extends Vue {
@@ -46,6 +71,9 @@ export default class CollectionDocuments extends Vue {
 
   @Prop({required: true})
   private collection!: FerdigApplicationCollection;
+
+  @State('token', {namespace: 'auth'})
+  private authToken!: string | null;
 
   private tableOptions: VuetifyDataTableOptions = {
     sortBy: [],
@@ -60,16 +88,55 @@ export default class CollectionDocuments extends Vue {
   private showError = false;
   private listObserver: BehaviorSubject<FerdigListResult<GenericDocumentType & FerdigCollectionDocumentDefaultProperties>> | null = null;
   private totalItems = 0;
+  private fileName = filename;
 
   private get tableHeaders() {
     if (!this.collection) {
       return [];
     }
 
-    return this.collection.columns.map((column) => ({
-      text: column.internalName,
-      value: column.internalName,
-    }));
+    return [
+      {
+        text: 'Created At',
+        value: 'createdAt',
+      },
+      {
+        text: 'Updated At',
+        value: 'updatedAt',
+      },
+      ...this.collection.columns.map((column) => ({
+        text: column.internalName,
+        value: column.internalName,
+      })),
+    ];
+  }
+
+  private get documentsForTableView() {
+    return this.documents.map((document) => {
+      const dateTimeFormatter = new Intl.DateTimeFormat(navigator.language, {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+
+      const mappedDocument: GenericDocumentType & FerdigCollectionDocumentDefaultProperties = {
+        ...document,
+      }
+
+      this.collection.columns.forEach((column) => {
+        if (column.valueType === FerdigApplicationCollectionColumnValueType.File) {
+          mappedDocument[column.internalName] = filename(mappedDocument[column.internalName] as string);
+        }
+        if (column.valueType === FerdigApplicationCollectionColumnValueType.Date) {
+          mappedDocument[column.internalName] = dateTimeFormatter.format(mappedDocument[column.internalName] as Date);
+        }
+      });
+
+      return mappedDocument;
+    });
   }
 
   @Watch('tableOptions', {deep: true})
@@ -113,6 +180,20 @@ export default class CollectionDocuments extends Vue {
     } finally {
       this.isLoadingDocuments = false;
     }
+  }
+
+  // noinspection JSMethodCanBeStatic
+  private fileUrl(column: FerdigApplicationCollectionColumn, documentInTable: GenericDocumentType) {
+    const document = this.documents.find((doc) => doc.id === documentInTable.id) as GenericDocumentType;
+
+    const filePath = document[column.internalName];
+
+    if (!filePath) {
+      return '';
+    }
+
+    // TODO: get a temporary token that can only access this file for a certain amount of time to prevent session hijacking
+    return `${getEnvVar('VUE_APP_FERDIG_HOST', 'string')}/api${filePath}?auth=${this.authToken}`;
   }
 }
 </script>

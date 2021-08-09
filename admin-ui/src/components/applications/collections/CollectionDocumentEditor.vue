@@ -1,11 +1,87 @@
 <template>
   <v-container grid-list-md v-if="documentVal">
     <v-form @submit.prevent="save()">
-      <v-text-field v-for="column in collection.columns"
-                    :key="column.id"
-                    :label="column.internalName"
+      <template v-for="column in collection.columns">
+        <div :key="column.id">
+          <!-- String Editor -->
+          <v-text-field :label="column.internalName"
+                        v-model="documentVal[column.internalName]"
+                        v-if="column.valueType === 'string'"
+                        prepend-icon="mdi-text"
+          />
+
+          <!-- Number Editor -->
+          <v-text-field :label="column.internalName"
+                        v-model.number="documentVal[column.internalName]"
+                        v-if="column.valueType === 'number'"
+                        prepend-icon="mdi-numeric"
+                        type="number"
+          />
+
+          <!-- Boolean Editor -->
+          <v-switch :label="column.internalName"
                     v-model="documentVal[column.internalName]"
-      />
+                    v-if="column.valueType === 'boolean'"
+                    prepend-icon="mdi-checkbox-marked-outline"
+          />
+
+          <!-- Date Editor -->
+          <v-layout wrap v-if="column.valueType === 'date'">
+            <v-flex xs12 md6>
+              <v-menu>
+                <template v-slot:activator="{on}">
+                  <v-text-field :label="column.internalName"
+                                :value="getDatePart(column)"
+                                prepend-icon="mdi-calendar"
+                                readonly
+                                v-on="on"
+                  />
+                </template>
+
+                <v-date-picker :value="getDatePartForPicker(column)"
+                               @change="(val) => setDatePart(column, val)"
+                               color="primary"
+                />
+              </v-menu>
+            </v-flex>
+
+            <v-flex xs12 md6>
+              <v-menu :close-on-content-click="false">
+                <template v-slot:activator="{on}">
+                  <v-text-field :label="column.internalName"
+                                :value="getTimePart(column)"
+                                prepend-icon="mdi-clock"
+                                readonly
+                                v-on="on"
+                  />
+                </template>
+
+                <v-time-picker :value="getTimePart(column)"
+                               @input="(val) => setTimePart(column, val)"
+                               color="primary"
+                               format="24hr"
+                />
+              </v-menu>
+            </v-flex>
+
+          </v-layout>
+
+          <!-- File Editor -->
+          <div v-if="column.valueType === 'file'">
+            <input type="file"
+                   style="display: none"
+                   :ref="'fileInput-' + column.internalName"
+                   @change="e => onSetFile(column, e)"
+            />
+            <v-text-field readonly
+                          :value="fileName(documentVal[column.internalName])"
+                          :label="column.internalName"
+                          prepend-icon="mdi-file"
+                          @click="() => clickFileInput(column)"
+            />
+          </div>
+        </div>
+      </template>
 
       <v-alert type="error"
                v-model="showError"
@@ -44,8 +120,14 @@ import Vue from 'vue';
 import Component from 'vue-class-component';
 import CollectionDocumentEditor from '@/components/applications/collections/CollectionDocumentEditor.vue';
 import {Prop, Watch} from 'vue-property-decorator';
-import {GenericDocumentType, getFerdigClient} from '@/api';
-import {FerdigApplicationCollection, FerdigCollectionDocumentDefaultProperties} from '@ferdig/client-js';
+import {GenericDocumentType, GenericDocumentTypeTypes, getFerdigClient} from '@/api';
+import {
+  FerdigApplicationCollection,
+  FerdigApplicationCollectionColumn,
+  FerdigApplicationCollectionColumnValueType,
+  FerdigCollectionDocumentDefaultProperties,
+} from '@ferdig/client-js';
+import {filename} from '@/utils/filename';
 
 @Component({
   components: {CollectionDocumentEditor},
@@ -71,7 +153,23 @@ export default class CollectionDocumentEditorBottomSheet extends Vue {
   private syncProp() {
     this.showError = false;
     this.error = '';
-    this.documentVal = JSON.parse(JSON.stringify(this.document));
+    this.documentVal = {};
+
+    this.collection.columns.forEach((column) => {
+      const valueAsString = JSON.stringify(this.document[column.internalName]);
+      let value: GenericDocumentTypeTypes = '';
+      if (valueAsString) {
+        value = JSON.parse(valueAsString);
+      }
+
+      if (column.valueType !== FerdigApplicationCollectionColumnValueType.Date) {
+        this.documentVal[column.internalName] = value;
+        return;
+      }
+
+      this.documentVal[column.internalName] = new Date(value as string);
+    });
+
     this.documentId = this.document.id;
 
     delete this.documentVal.createdAt;
@@ -89,11 +187,23 @@ export default class CollectionDocumentEditorBottomSheet extends Vue {
           .collections(this.applicationId)
           .documents<GenericDocumentType>(this.collection.id);
 
+      const mappedDocumentVal = Object.assign({}, this.documentVal);
+      this.collection.columns.forEach((column) => {
+        if (column.valueType !== FerdigApplicationCollectionColumnValueType.File) {
+          return;
+        }
+
+        if (typeof mappedDocumentVal[column.internalName] === 'string') {
+          delete mappedDocumentVal[column.internalName];
+        }
+      });
+
+
       let updatedDocument: GenericDocumentType & FerdigCollectionDocumentDefaultProperties;
       if (this.documentId === 'new') {
-        updatedDocument = await documentsClient.create(this.documentVal);
+        updatedDocument = await documentsClient.create(mappedDocumentVal);
       } else {
-        updatedDocument = await documentsClient.update(this.documentId, this.documentVal);
+        updatedDocument = await documentsClient.update(this.documentId, mappedDocumentVal);
       }
 
       this.$emit('save', updatedDocument);
@@ -109,7 +219,7 @@ export default class CollectionDocumentEditorBottomSheet extends Vue {
   private async removeDocument() {
     const confirmed = await this.$dialog.confirm({
       text: 'Are you sure you want to remove this document?',
-      type: 'error'
+      type: 'error',
     });
 
     if (!confirmed) {
@@ -132,6 +242,84 @@ export default class CollectionDocumentEditorBottomSheet extends Vue {
     } finally {
       this.isDeleting = false;
     }
+  }
+
+  private fileName = filename;
+
+  private getDatePart(column: FerdigApplicationCollectionColumn, lang?: string) {
+    const date = this.documentVal[column.internalName] as Date | null;
+
+    if (!date) {
+      return '';
+    }
+
+    return new Intl.DateTimeFormat(lang ?? navigator.language, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(date);
+  }
+
+  private getDatePartForPicker(column: FerdigApplicationCollectionColumn) {
+    return this.getDatePart(column, 'en-EN')
+  }
+
+  private setDatePart(column: FerdigApplicationCollectionColumn, datePart: string) {
+    const date = (this.documentVal[column.internalName] as Date | null) ?? new Date();
+
+    const [year, month, day] = datePart.split('-');
+
+    date.setFullYear(Number(year), Number(month) - 1, Number(day));
+
+    this.documentVal[column.internalName] = date;
+  }
+
+  private getTimePart(column: FerdigApplicationCollectionColumn, lang?: string) {
+    const date = this.documentVal[column.internalName] as Date | null;
+
+    if (!date) {
+      return '';
+    }
+
+    return new Intl.DateTimeFormat(lang ?? navigator.language, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).format(date);
+  }
+
+  private setTimePart(column: FerdigApplicationCollectionColumn, timePart: string) {
+    const date: Date = (this.documentVal[column.internalName] as Date | null) ?? new Date();
+
+    const [currentHours, currentMinutes] = this.getTimePart(column, 'en-EN').split(':');
+    const [setHours, setMinutes] = timePart.split(':');
+
+    const newHours = date.getHours() + (Number(setHours) - Number(currentHours));
+    const newMinutes = date.getMinutes() + (Number(setMinutes) - Number(currentMinutes));
+
+    date.setHours(newHours);
+    date.setMinutes(newMinutes);
+
+    this.documentVal[column.internalName] = date;
+  }
+
+  private clickFileInput(column: FerdigApplicationCollectionColumn) {
+    let input = this.$refs['fileInput-' + column.internalName] as HTMLInputElement;
+
+    if (Array.isArray(input)) {
+      input = input[0];
+    }
+
+    input.click();
+  }
+
+  private onSetFile(column: FerdigApplicationCollectionColumn, event: InputEvent) {
+    this.documentVal[column.internalName] = (event.target as HTMLInputElement).files?.item(0) ?? null;
+
+    this.$nextTick(() => {
+      const input = this.$refs['fileInput-' + column.internalName] as HTMLInputElement;
+      input.value = '';
+    });
   }
 }
 </script>

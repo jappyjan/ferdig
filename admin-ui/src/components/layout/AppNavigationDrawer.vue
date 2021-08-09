@@ -56,6 +56,7 @@ import AnimatedLogo from '@/components/Logo/AnimatedLogo.vue';
 import {State} from 'vuex-class';
 import {FerdigApplication} from '@ferdig/client-js';
 import {getFerdigClient} from '@/api';
+import {errorMessage} from '@/utils/dialog';
 
 interface AppArea {
   path: string;
@@ -140,8 +141,7 @@ export default class AppNavigationDrawer extends Vue {
           .getLogo(this.activeApplication.id);
       this.activeApplicationLogoSrc = URL.createObjectURL(logoBlob);
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(e);
+      await errorMessage(e);
     }
   }
 }
