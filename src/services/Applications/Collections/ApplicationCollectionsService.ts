@@ -2,12 +2,12 @@ import {DEFAULT_DB_CONNECTION} from '../../shared-providers/defaultDBConnection'
 import Application from '../../../entity/Applications/Application';
 import ApplicationCollection from '../../../entity/Applications/Collections/ApplicationCollection';
 import CollectionNotFoundError from './errors/CollectionNotFoundError';
-import {Inject, Service} from '@tsed/di';
+import {Inject} from '@tsed/di';
 import ApplicationCollectionColumn from '../../../entity/Applications/Collections/ApplicationCollectionColumn';
 import ApplicationCollectionDocumentProperty
     from '../../../entity/Applications/Collections/ApplicationCollectionDocumentProperty';
 import {EntityManager, QueryRunner} from 'typeorm';
-import {Constant} from '@tsed/common';
+import {Constant, Logger} from '@tsed/common';
 import User from '../../../entity/Users/User';
 import ApplicationCollectionDocumentsAccessPermissionsService
     from './Documents/Permissions/ApplicationCollectionDocumentsAccessPermissionsService';
@@ -28,6 +28,10 @@ import ApplicationCollectionDocumentAccessRule
 import CollectionColumnNotFoundError from './errors/CollectionCollumNotFoundError';
 import {runInTransaction, waitForAllPromises} from '../../../utils/typeorm.utils';
 import ApplicationCollectionDocument from '../../../entity/Applications/Collections/ApplicationCollectionDocument';
+import {Socket, SocketService} from '@tsed/socketio';
+import UsersService from '../../Users/UsersService';
+import {makeLogger} from '../../../utils/logger';
+import {handleSocketAuth} from '../../../utils/sockets';
 
 const fetchAccessRuleRecursively = async (manager: EntityManager, rule: ApplicationCollectionDocumentAccessRule): Promise<void> => {
     const [and, or] = await waitForAllPromises([
@@ -52,23 +56,122 @@ const fetchAccessRuleRecursively = async (manager: EntityManager, rule: Applicat
     ]);
 }
 
-@Service()
+@SocketService('applications/collections')
 export default class ApplicationCollectionsService {
     @Constant('collections.listDocuments.maxFilters')
     private readonly listDocumentsMaxFilters: number;
 
     private readonly orm: DEFAULT_DB_CONNECTION;
-    private readonly collectionDocumentsAccessPermissionsService: ApplicationCollectionDocumentsAccessPermissionsService;
+    private readonly documentsAccessPermissionsService: ApplicationCollectionDocumentsAccessPermissionsService;
     private readonly applicationsService: ApplicationsService;
+    private readonly clientToApplicationMapping: Record<string, Array<{ socket: Socket, user: User }>>;
+    private readonly usersService: UsersService;
+    private readonly $log: Logger;
 
     public constructor(
         @Inject(DEFAULT_DB_CONNECTION) orm: DEFAULT_DB_CONNECTION,
-        collectionDocumentsAccessPermissionsService: ApplicationCollectionDocumentsAccessPermissionsService,
+        documentsAccessPermissionsService: ApplicationCollectionDocumentsAccessPermissionsService,
         applicationsService: ApplicationsService,
+        usersService: UsersService,
     ) {
         this.orm = orm;
-        this.collectionDocumentsAccessPermissionsService = collectionDocumentsAccessPermissionsService;
+        this.documentsAccessPermissionsService = documentsAccessPermissionsService;
         this.applicationsService = applicationsService;
+        this.usersService = usersService;
+        this.$log = makeLogger('ApplicationCollectionsService');
+        this.clientToApplicationMapping = {};
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public async $onConnection(@Socket socket: Socket): Promise<void> {
+        const user = await handleSocketAuth({
+            logger: this.$log,
+            socket,
+            usersService: this.usersService,
+        });
+
+        let applicationId = '__CONSOLE_ACCESS__';
+        if (!user.auth.hasConsoleAccess) {
+            if (!user.application) {
+                this.$log.info('socket auth not accepted');
+                socket.emit('authorize:response', {
+                    state: 'error',
+                    error: 'User has no access to any application',
+                });
+                return;
+            }
+
+            applicationId = user.application.id;
+        }
+
+        if (!Array.isArray(this.clientToApplicationMapping[applicationId])) {
+            this.clientToApplicationMapping[applicationId] = [];
+        }
+
+        this.clientToApplicationMapping[applicationId].push({socket, user});
+    }
+
+    private emitCollectionChange(identifier: CollectionIdentifier, collection: ApplicationCollection | null) {
+        this.emitCollectionChangeAsync(identifier, collection)
+            .catch((e) => this.$log.error(e));
+    }
+
+    private async emitCollectionChangeAsync(
+        identifier: CollectionIdentifier,
+        collection: ApplicationCollection | null,
+    ) {
+        const clients = [
+            ...this.clientToApplicationMapping[identifier.applicationId] || [],
+            ...this.clientToApplicationMapping['__CONSOLE_ACCESS__'] || [],
+        ];
+
+        const emitToSingleClient = async (client: { user: User, socket: Socket }) => {
+            const baseEventName = `applications/${identifier.applicationId}/collections/`;
+            const payload = {
+                identifier,
+                item: collection,
+            };
+
+            client.socket.emit(baseEventName + identifier.collectionId, payload);
+            client.socket.emit(baseEventName + '*', payload);
+        }
+
+        await waitForAllPromises(clients.map(emitToSingleClient));
+    }
+
+    private emitCollectionColumnChange(
+        identifier: CollectionColumnIdentifier,
+        column: ApplicationCollectionColumn | null,
+    ) {
+        this.emitCollectionColumnChangeAsync(identifier, column)
+            .catch((e) => this.$log.error(e));
+    }
+
+    private async emitCollectionColumnChangeAsync(
+        identifier: CollectionColumnIdentifier,
+        column: ApplicationCollectionColumn | null,
+    ) {
+        const clients = [
+            ...this.clientToApplicationMapping[identifier.applicationId] || [],
+            ...this.clientToApplicationMapping['__CONSOLE_ACCESS__'] || [],
+        ];
+
+        const emitToSingleClient = async (client: { user: User, socket: Socket }) => {
+            const payload = {
+                identifier,
+                item: column,
+            };
+
+            const baseEventNameWithCollection = `applications/${identifier.applicationId}/collections/${identifier.collectionId}/columns/`;
+            client.socket.emit(baseEventNameWithCollection + identifier.columnId, payload);
+            client.socket.emit(baseEventNameWithCollection + '*', payload);
+
+            const baseEventNameWithoutCollection = `applications/${identifier.applicationId}/collections/*/columns/`;
+            client.socket.emit(baseEventNameWithoutCollection + identifier.columnId, payload);
+            client.socket.emit(baseEventNameWithoutCollection + '*', payload);
+        }
+
+        await waitForAllPromises(clients.map(emitToSingleClient));
     }
 
     // noinspection JSMethodCanBeStatic
@@ -128,16 +231,26 @@ export default class ApplicationCollectionsService {
             application = await this.applicationsService.getApplicationById(applicationOrApplicationId, runner);
         }
 
-        const readRule = await this.collectionDocumentsAccessPermissionsService.createAccessRule(data.readAccessRule, runner);
-        const writeRule = await this.collectionDocumentsAccessPermissionsService.createAccessRule(data.writeAccessRule, runner);
+        const readRule = await this.documentsAccessPermissionsService.createAccessRule(data.readAccessRule, runner);
+        const writeRule = await this.documentsAccessPermissionsService.createAccessRule(data.writeAccessRule, runner);
 
-        return await manager.getRepository(ApplicationCollection)
+        const collection = await manager.getRepository(ApplicationCollection)
             .save({
                 application: application,
                 internalName: data.internalName,
                 readAccessRule: readRule,
                 writeAccessRule: writeRule,
             });
+
+        this.emitCollectionChange(
+            {
+                applicationId: application.id,
+                collectionId: collection.id,
+            },
+            collection,
+        );
+
+        return collection;
     }
 
     public async getCollection(
@@ -227,17 +340,24 @@ export default class ApplicationCollectionsService {
         }
 
         if (data.readAccessRule) {
-            await this.collectionDocumentsAccessPermissionsService.removeAccessRule(collection.readAccessRule, runner);
-            collection.readAccessRule = await this.collectionDocumentsAccessPermissionsService.createAccessRule(data.readAccessRule, runner);
+            await this.documentsAccessPermissionsService.removeAccessRule(collection.readAccessRule, runner);
+            collection.readAccessRule = await this.documentsAccessPermissionsService.createAccessRule(data.readAccessRule, runner);
         }
 
         if (data.writeAccessRule) {
-            await this.collectionDocumentsAccessPermissionsService.removeAccessRule(collection.writeAccessRule, runner);
-            collection.writeAccessRule = await this.collectionDocumentsAccessPermissionsService.createAccessRule(data.writeAccessRule, runner);
+            await this.documentsAccessPermissionsService.removeAccessRule(collection.writeAccessRule, runner);
+            collection.writeAccessRule = await this.documentsAccessPermissionsService.createAccessRule(data.writeAccessRule, runner);
         }
 
-        return await manager.getRepository(ApplicationCollection)
+        const updatedCollection = await manager.getRepository(ApplicationCollection)
             .save(collection);
+
+        this.emitCollectionChange(
+            identifier,
+            updatedCollection,
+        );
+
+        return updatedCollection;
     }
 
     public async addColumn(
@@ -280,10 +400,10 @@ export default class ApplicationCollectionsService {
         }
         const collection = await this.getCollection(authenticatedUser, collectionIdentifier, runner);
 
-        const writeAccessRule = await this.collectionDocumentsAccessPermissionsService.createAccessRule(data.writeAccessRule, runner);
-        const readAccessRule = await this.collectionDocumentsAccessPermissionsService.createAccessRule(data.readAccessRule, runner);
+        const writeAccessRule = await this.documentsAccessPermissionsService.createAccessRule(data.writeAccessRule, runner);
+        const readAccessRule = await this.documentsAccessPermissionsService.createAccessRule(data.readAccessRule, runner);
 
-        return await manager.getRepository(ApplicationCollectionColumn)
+        const column = await manager.getRepository(ApplicationCollectionColumn)
             .save({
                 collection,
                 internalName: data.internalName.split(' ').join('_'),
@@ -292,6 +412,16 @@ export default class ApplicationCollectionsService {
                 writeAccessRule,
                 readAccessRule,
             });
+
+        this.emitCollectionColumnChange(
+            {
+                ...collectionIdentifier,
+                columnId: column.id,
+            },
+            column,
+        );
+
+        return column;
     }
 
     public async getColumn(
@@ -363,17 +493,24 @@ export default class ApplicationCollectionsService {
         }
 
         if (data.writeAccessRule !== undefined) {
-            await this.collectionDocumentsAccessPermissionsService.removeAccessRule(column.writeAccessRule, runner)
-            column.writeAccessRule = await this.collectionDocumentsAccessPermissionsService.createAccessRule(data.writeAccessRule, runner);
+            await this.documentsAccessPermissionsService.removeAccessRule(column.writeAccessRule, runner)
+            column.writeAccessRule = await this.documentsAccessPermissionsService.createAccessRule(data.writeAccessRule, runner);
         }
 
         if (data.readAccessRule !== undefined) {
-            await this.collectionDocumentsAccessPermissionsService.removeAccessRule(column.readAccessRule, runner)
-            column.readAccessRule = await this.collectionDocumentsAccessPermissionsService.createAccessRule(data.readAccessRule, runner);
+            await this.documentsAccessPermissionsService.removeAccessRule(column.readAccessRule, runner)
+            column.readAccessRule = await this.documentsAccessPermissionsService.createAccessRule(data.readAccessRule, runner);
         }
 
-        return await manager.getRepository(ApplicationCollectionColumn)
+        const updatedColumn = await manager.getRepository(ApplicationCollectionColumn)
             .save(column);
+
+        this.emitCollectionColumnChange(
+            columnIdentifier,
+            column,
+        );
+
+        return updatedColumn;
     }
 
     public async removeColumn(
@@ -414,8 +551,8 @@ export default class ApplicationCollectionsService {
 
         const column = await this.getColumn(authenticatedUser, identifier, runner);
 
-        await this.collectionDocumentsAccessPermissionsService.removeAccessRule(column.writeAccessRule, runner);
-        await this.collectionDocumentsAccessPermissionsService.removeAccessRule(column.readAccessRule, runner);
+        await this.documentsAccessPermissionsService.removeAccessRule(column.writeAccessRule, runner);
+        await this.documentsAccessPermissionsService.removeAccessRule(column.readAccessRule, runner);
 
         // delete all document properties which used this column
         const properties = await manager.getRepository(ApplicationCollectionDocumentProperty)
@@ -435,6 +572,11 @@ export default class ApplicationCollectionsService {
         // delete the actual column definition
         await manager.getRepository(ApplicationCollectionColumn)
             .remove(column);
+
+        this.emitCollectionColumnChange(
+            identifier,
+            null,
+        );
     }
 
     public async list(
@@ -558,5 +700,7 @@ export default class ApplicationCollectionsService {
 
         await manager.getRepository(ApplicationCollection)
             .remove(collection);
+
+        this.emitCollectionChange(identifier, null);
     }
 }

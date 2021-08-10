@@ -82,6 +82,7 @@ import CollectionDocumentEditorBottomSheet
   from '@/components/applications/collections/CollectionDocumentEditorBottomSheet.vue';
 import {State} from 'vuex-class';
 import {Breadcrumb} from '@/store/RootState';
+import {BehaviorSubject} from 'rxjs';
 
 @Component({
   components: {
@@ -98,6 +99,7 @@ export default class CollectionDetails extends Vue {
   @Prop({required: true})
   private collectionId!: string;
 
+  private collectionSubject: BehaviorSubject<FerdigApplicationCollection | null> | null = null;
   private collection: FerdigApplicationCollection | null = null;
   private isLoadingCollection = true;
   private error: string | null = null;
@@ -171,10 +173,14 @@ export default class CollectionDetails extends Vue {
     try {
       this.isLoadingCollection = true;
 
-      this.collection = await getFerdigClient()
+      this.collectionSubject = await getFerdigClient()
           .applications
           .collections(this.activeApplication.id)
-          .get(this.collectionId);
+          .getAndObserve(this.collectionId);
+
+      this.collectionSubject!.subscribe((collection) => {
+        this.collection = collection;
+      });
 
       this.showError = false;
     } catch (e) {

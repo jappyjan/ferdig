@@ -1,6 +1,6 @@
 import {Inject} from '@tsed/di';
 import {Brackets, EntityManager, QueryRunner, WhereExpression} from 'typeorm';
-import {$log, Constant} from '@tsed/common';
+import {Constant, Logger} from '@tsed/common';
 import ApplicationCollectionsService from '../ApplicationCollectionsService';
 import ApplicationCollectionColumn, {ApplicationCollectionColumnValueType} from '../../../../entity/Applications/Collections/ApplicationCollectionColumn';
 import ApplicationCollectionDocument from '../../../../entity/Applications/Collections/ApplicationCollectionDocument';
@@ -22,7 +22,6 @@ import PropertyNotAnArrayError from './errors/PropertyNotAnArrayError';
 import PropertyValueTypeError from './errors/PropertyValueTypeError';
 import {IO, Server, Socket, SocketService} from '@tsed/socketio';
 import UsersService from '../../../Users/UsersService';
-import {validateAuthJwt} from '../../../../utils/validate-auth-jwt';
 import {documentToObject} from '../../../../entity/Applications/Collections/utils/document-to-object';
 import {OnCommitAction, runInTransaction, waitForAllPromises} from '../../../../utils/typeorm.utils';
 import {DEFAULT_MINIO_CONNECTION, MinioFile} from '../../../shared-providers/defaultMinioConnection';
@@ -32,6 +31,8 @@ import {DocumentIdentifier} from './DocumentIdentifier';
 import {ColumnFileIdentifier} from './ColumnFileIdentifier';
 import {Readable} from 'stream';
 import UnknownFileError from './errors/UnknownFileError';
+import {handleSocketAuth} from '../../../../utils/sockets';
+import {makeLogger} from '../../../../utils/logger';
 
 @SocketService('applications/collections/documents')
 export default class ApplicationCollectionDocumentsService {
@@ -41,23 +42,14 @@ export default class ApplicationCollectionDocumentsService {
     @Constant('minio.bucket')
     private readonly bucketName: string;
 
-    protected readonly io: Server;
+    private readonly io: Server;
     private readonly orm: DEFAULT_DB_CONNECTION;
-    protected readonly usersService: UsersService;
+    private readonly usersService: UsersService;
     private readonly permissionsService: ApplicationCollectionDocumentsAccessPermissionsService;
     private readonly collectionsService: ApplicationCollectionsService;
     private readonly clientToApplicationMapping: Record<string, Array<{ socket: Socket, user: User }>>;
     private readonly minio: DEFAULT_MINIO_CONNECTION;
-
-    // noinspection JSMethodCanBeStatic
-    private getDocumentBaseQuery(manager: EntityManager) {
-        return manager.getRepository(ApplicationCollectionDocument)
-            .createQueryBuilder('document')
-            .leftJoinAndSelect('document.properties', 'property')
-            .leftJoinAndSelect('property.column', 'column')
-            .leftJoinAndSelect('document.collection', 'collection')
-            .leftJoinAndSelect('column.readAccessRule', 'readAccessRule');
-    }
+    private readonly $log: Logger;
 
     public constructor(
         @IO io: Server,
@@ -74,19 +66,21 @@ export default class ApplicationCollectionDocumentsService {
         this.permissionsService = collectionsAccessPermissionsService;
         this.collectionsService = collectionsService;
         this.minio = minio;
+        this.$log = makeLogger('ApplicationCollectionDocumentsService');
     }
 
     // noinspection JSUnusedGlobalSymbols
     public async $onConnection(@Socket socket: Socket): Promise<void> {
-        $log.info('socket connected', socket.id, socket.handshake.auth);
-
-        const {sub: userId} = await validateAuthJwt(socket.handshake.auth.token as string);
-        const user = await this.usersService.getOneWithoutAuthCheckOrFail({id: userId});
+        const user = await handleSocketAuth({
+            logger: this.$log,
+            socket,
+            usersService: this.usersService,
+        });
 
         let applicationId = '__CONSOLE_ACCESS__';
         if (!user.auth.hasConsoleAccess) {
             if (!user.application) {
-                $log.info('socket auth not accepted');
+                this.$log.info('socket auth not accepted');
                 socket.emit('authorize:response', {
                     state: 'error',
                     error: 'User has no access to any application',
@@ -102,11 +96,51 @@ export default class ApplicationCollectionDocumentsService {
         }
 
         this.clientToApplicationMapping[applicationId].push({socket, user});
+    }
 
-        $log.info('socket auth accepted');
-        socket.emit('authorize:response', {
-            state: 'success',
-        });
+    // noinspection JSMethodCanBeStatic
+    private getDocumentBaseQuery(manager: EntityManager) {
+        return manager.getRepository(ApplicationCollectionDocument)
+            .createQueryBuilder('document')
+            .leftJoinAndSelect('document.properties', 'property')
+            .leftJoinAndSelect('property.column', 'column')
+            .leftJoinAndSelect('document.collection', 'collection')
+            .leftJoinAndSelect('column.readAccessRule', 'readAccessRule');
+    }
+
+    private emitDocumentChange(identifier: DocumentIdentifier, document: ApplicationCollectionDocument | null) {
+        this.emitDocumentChangeAsync(identifier, document)
+            .catch((e) => this.$log.error(e));
+    }
+
+    private async emitDocumentChangeAsync(
+        identifier: DocumentIdentifier,
+        document: ApplicationCollectionDocument | null,
+    ) {
+        const clients = [
+            ...this.clientToApplicationMapping[identifier.applicationId] || [],
+            ...this.clientToApplicationMapping['__CONSOLE_ACCESS__'] || [],
+        ];
+
+        const emitToSingleClient = async (client: { user: User, socket: Socket }) => {
+            if (document) {
+                const collection = await this.collectionsService.getCollection(client.user, identifier);
+                await this.permissionsService.hasPermissionOrFails(client.user, collection.readAccessRule, document);
+            }
+
+            const baseEventName = `applications/${identifier.applicationId}/collections/${identifier.collectionId}/documents/`;
+            const documentAsObject = document ? documentToObject(document) : null;
+
+            const payload = {
+                identifier,
+                item: documentAsObject,
+            };
+
+            client.socket.emit(baseEventName + identifier.documentId, payload);
+            client.socket.emit(baseEventName + '*', payload);
+        }
+
+        await waitForAllPromises(clients.map(emitToSingleClient));
     }
 
     public async listDocuments(
@@ -631,38 +665,6 @@ export default class ApplicationCollectionDocumentsService {
             .remove(document);
 
         this.emitDocumentChange(identifier, null);
-    }
-
-    private emitDocumentChange(identifier: DocumentIdentifier, document: ApplicationCollectionDocument | null) {
-        this.emitDocumentChangeAsync(identifier, document)
-            .catch((e) => $log.error(e));
-    }
-
-    private async emitDocumentChangeAsync(identifier: DocumentIdentifier, document: ApplicationCollectionDocument | null) {
-        const clients = [
-            ...this.clientToApplicationMapping[identifier.applicationId] || [],
-            ...this.clientToApplicationMapping['__CONSOLE_ACCESS__'] || [],
-        ];
-
-        const emitToSingleClient = async (client: { user: User, socket: Socket }) => {
-            if (document) {
-                const collection = await this.collectionsService.getCollection(client.user, identifier);
-                await this.permissionsService.hasPermissionOrFails(client.user, collection.readAccessRule, document);
-            }
-
-            const baseEventName = `applications/${identifier.applicationId}/collections/${identifier.collectionId}/documents/`;
-            const documentAsObject = document ? documentToObject(document) : null;
-
-            const payload = {
-                identifier,
-                document: documentAsObject,
-            };
-
-            client.socket.emit(baseEventName + identifier.documentId, payload);
-            client.socket.emit(baseEventName + '*', payload);
-        }
-
-        await waitForAllPromises(clients.map(emitToSingleClient));
     }
 
     private async removeDocumentProperty(

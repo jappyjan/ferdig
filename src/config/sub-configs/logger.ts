@@ -1,9 +1,12 @@
 import {$log, PlatformLoggerSettings} from '@tsed/common';
 import {isProduction} from '../env';
 import {getEnvVar} from '../../utils/env';
+import {IAppenderConfiguration} from '@tsed/logger/lib/appenders/interfaces/AppenderConfiguration';
+
+export const loggerAppenders = new Map<string, IAppenderConfiguration>();
 
 if (isProduction) {
-    $log.appenders.set('stdout', {
+    loggerAppenders.set('stdout', {
         type: 'stdout',
         levels: ['info', 'debug'],
         layout: {
@@ -11,7 +14,7 @@ if (isProduction) {
         },
     });
 
-    $log.appenders.set('stderr', {
+    loggerAppenders.set('stderr', {
         levels: ['trace', 'fatal', 'error', 'warn'],
         type: 'stderr',
         layout: {
@@ -19,6 +22,10 @@ if (isProduction) {
         },
     });
 }
+
+loggerAppenders.forEach((appender, name) => {
+    $log.appenders.set(name, appender);
+});
 
 export const loggerConfig: Partial<PlatformLoggerSettings> = {
     disableRoutesSummary: true,
