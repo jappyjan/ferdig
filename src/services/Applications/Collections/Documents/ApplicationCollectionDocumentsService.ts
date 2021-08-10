@@ -128,7 +128,6 @@ export default class ApplicationCollectionDocumentsService {
                 await this.permissionsService.hasPermissionOrFails(client.user, collection.readAccessRule, document);
             }
 
-            const baseEventName = `applications/${identifier.applicationId}/collections/${identifier.collectionId}/documents/`;
             const documentAsObject = document ? documentToObject(document) : null;
 
             const payload = {
@@ -136,8 +135,7 @@ export default class ApplicationCollectionDocumentsService {
                 item: documentAsObject,
             };
 
-            client.socket.emit(baseEventName + identifier.documentId, payload);
-            client.socket.emit(baseEventName + '*', payload);
+            client.socket.emit('applications/collections/documents::change', payload);
         }
 
         await waitForAllPromises(clients.map(emitToSingleClient));

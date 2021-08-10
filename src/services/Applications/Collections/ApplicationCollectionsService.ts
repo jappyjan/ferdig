@@ -126,14 +126,12 @@ export default class ApplicationCollectionsService {
         ];
 
         const emitToSingleClient = async (client: { user: User, socket: Socket }) => {
-            const baseEventName = `applications/${identifier.applicationId}/collections/`;
             const payload = {
                 identifier,
                 item: collection,
             };
 
-            client.socket.emit(baseEventName + identifier.collectionId, payload);
-            client.socket.emit(baseEventName + '*', payload);
+            client.socket.emit('applications/collections::change', payload);
         }
 
         await waitForAllPromises(clients.map(emitToSingleClient));
@@ -162,13 +160,7 @@ export default class ApplicationCollectionsService {
                 item: column,
             };
 
-            const baseEventNameWithCollection = `applications/${identifier.applicationId}/collections/${identifier.collectionId}/columns/`;
-            client.socket.emit(baseEventNameWithCollection + identifier.columnId, payload);
-            client.socket.emit(baseEventNameWithCollection + '*', payload);
-
-            const baseEventNameWithoutCollection = `applications/${identifier.applicationId}/collections/*/columns/`;
-            client.socket.emit(baseEventNameWithoutCollection + identifier.columnId, payload);
-            client.socket.emit(baseEventNameWithoutCollection + '*', payload);
+            client.socket.emit('applications/collections/columns::change', payload);
         }
 
         await waitForAllPromises(clients.map(emitToSingleClient));
