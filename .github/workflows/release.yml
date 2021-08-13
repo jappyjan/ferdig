@@ -15,4 +15,4 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
       - name: "Bump version"
-        uses: Wawa27/automatic-version-bump
+        uses: Wawa27/automatic-version-bump@main
