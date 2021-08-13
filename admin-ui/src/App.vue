@@ -18,6 +18,8 @@
           color="deep-purple"
       />
 
+      <ferdig-update-banner />
+
       <v-breadcrumbs v-if="breadcrumbs.length > 0" :items="breadcrumbs"/>
 
       <router-view/>
@@ -37,9 +39,11 @@ import AnimatedLogo from '@/components/Logo/AnimatedLogo.vue';
 import AppNavigationDrawer from '@/components/layout/AppNavigationDrawer.vue';
 import {State} from 'vuex-class';
 import {Breadcrumb} from '@/store/RootState';
+import FerdigUpdateBanner from '@/components/layout/FerdigUpdateBanner.vue';
 
 @Component({
   components: {
+    FerdigUpdateBanner,
     AppNavigationDrawer,
     AnimatedLogo,
     SplashScreen,
