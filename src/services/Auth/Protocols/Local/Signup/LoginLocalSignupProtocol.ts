@@ -6,8 +6,9 @@ import EmailAlreadyRegisteredError from './Errors/EmailAlreadyRegisteredError';
 import UsersService from '../../../../Users/UsersService';
 import {CreatePayload} from '../../../../Users/CreatePayload';
 import ApplicationsService from '../../../../Applications/ApplicationsService';
+import Application from '../../../../../entity/Applications/Application';
 
-type SignupData = Omit<CreatePayload, 'application'> & { applicationId: string };
+type SignupData = Omit<CreatePayload, 'application'> & { applicationId: string | null };
 
 @Protocol({
     name: 'local-signup',
@@ -37,7 +38,10 @@ export class LoginLocalSignupProtocol implements OnVerify {
             throw new EmailAlreadyRegisteredError();
         }
 
-        const application = await this.applicationsService.getApplicationById(userData.applicationId);
+        let application: Application | null = null;
+        if (userData.applicationId) {
+            application = await this.applicationsService.getApplicationById(userData.applicationId);
+        }
 
         return await this.usersService.createUser(null, {
             email: userData.email,
