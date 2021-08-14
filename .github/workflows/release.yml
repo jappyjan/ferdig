@@ -68,7 +68,7 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           repository: jappyjan/ferdig
-          tag: ${{ steps.package-version.outputs.current-version}}
+          tag: ${{ steps.package-version.outputs.current-version}} latest
 
       - name: Publish to Github Packages
         uses: zenato/docker-action@master
