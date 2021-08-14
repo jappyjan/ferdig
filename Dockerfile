@@ -18,30 +18,35 @@ FROM node:14-alpine
 
 RUN apk update && apk add build-base git python
 
-COPY package.json .
-COPY yarn.lock .
+WORKDIR /ferdig
+COPY package.json /ferdig
+COPY yarn.lock /ferdig
 RUN yarn install
-COPY ./src ./src
-COPY ./tsconfig.json .
-COPY ./tsconfig.compile.json .
-COPY ./.babelrc .
+COPY ./src /ferdig/src
+COPY ./tsconfig.json /ferdig
+COPY ./tsconfig.compile.json /ferdig
+COPY ./.babelrc /ferdig
 RUN yarn build
-COPY ./dist ./dist
+COPY ./dist /ferdig/dist
 
-COPY admin-ui/package.json ./admin-ui/package.json
-COPY admin-ui/yarn.lock ./admin-ui/yarn.lock
-RUN (cd admin-ui && yarn install)
+COPY admin-ui/package.json /ferdig/admin-ui/package.json
+COPY admin-ui/yarn.lock /ferdig/admin-ui/yarn.lock
 
-COPY admin-ui/src ./admin-ui/src
-COPY admin-ui/public ./admin-ui/public
-COPY admin-ui/.browserslistrc ./admin-ui/.browserslistrc
-COPY admin-ui/.env ./admin-ui/.env
-COPY admin-ui/.eslintignore ./admin-ui/.eslintignore
-COPY admin-ui/.eslintrc.js ./admin-ui/.eslintrc.js
-COPY admin-ui/babel.config.js ./admin-ui/babel.config.js
-COPY admin-ui/tsconfig.json ./admin-ui/tsconfig.json
-COPY admin-ui/vue.config.js ./admin-ui/vue.config.js
-RUN (cd admin-ui && yarn build)
+WORKDIR admin-ui
+RUN yarn install
+
+WORKDIR /ferdig
+COPY admin-ui/src /ferdig/admin-ui/src
+COPY admin-ui/public /ferdig/admin-ui/public
+COPY admin-ui/.browserslistrc /ferdig/admin-ui/.browserslistrc
+COPY admin-ui/.env /ferdig/admin-ui/.env
+COPY admin-ui/.eslintignore /ferdig/admin-ui/.eslintignore
+COPY admin-ui/.eslintrc.js /ferdig/admin-ui/.eslintrc.js
+COPY admin-ui/babel.config.js /ferdig/admin-ui/babel.config.js
+COPY admin-ui/tsconfig.json /ferdig/admin-ui/tsconfig.json
+COPY admin-ui/vue.config.js /ferdig/admin-ui/vue.config.js
+
+RUN yarn build
 
 COPY ./public ./public
 
