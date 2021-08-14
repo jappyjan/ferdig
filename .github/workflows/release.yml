@@ -1,35 +1,33 @@
-name: "Bump Version"
-
 on:
   push:
-    branches: [ main ]
-
+    branches:
+      - main
+name: release-please
 jobs:
-  bump-version:
-    name: 'Bump Version on master'
+  release-please:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 'Checkout source code'
-        uses: 'actions/checkout@v1'
+      - uses: GoogleCloudPlatform/release-please-action@v2
+        id: release
         with:
-          ref: ${{ github.ref }}
-      - name: 'cat package.json'
-        run: cat ./package.json
-      - name: 'Setup Node.js'
-        uses: 'actions/setup-node@v1'
+          release-type: node
+          package-name: test-release-please
+          changelog-types: '[{"type":"feat","section":"Features","hidden":false},{"type":"fix","section":"Bug Fixes","hidden":false},{"type":"chore","section":"Miscellaneous","hidden":false}]'
+      # The logic below handles the npm publication:
+      - uses: actions/checkout@v2
+        # these if statements ensure that a publication only occurs when
+        # a new release is created:
+        if: ${{ steps.release.outputs.release_created }}
+      - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - name: 'Automated Version Bump'
-        id: version-bump
-        uses: 'phips28/gh-action-bump-version@master'
-        with:
-          tag-prefix: 'v'
+          registry-url: 'https://registry.npmjs.org'
+        if: ${{ steps.release.outputs.release_created }}
+      - run: yarn install --frozen-lockfile
+        if: ${{ steps.release.outputs.release_created }}
+      - run: yarn build
+        if: ${{ steps.release.outputs.release_created }}
+      - run: yarn publish --access public
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: 'cat package.json'
-        run: cat ./package.json
-      - name: 'Output Step'
-        env:
-          NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
-        run: echo "new tag $NEW_TAG"
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        if: ${{ steps.release.outputs.release_created }}
