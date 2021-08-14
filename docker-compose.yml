@@ -8,7 +8,7 @@ volumes:
 
 services:
   ferdig:
-    image: https://ghcr.io/jappyjan/ferdig/ferdig
+    image: jappyjan/ferdig
     restart: always
     expose:
       - 8081
