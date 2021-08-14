@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.0](https://www.github.com/jappyjan/ferdig/compare/v1.26.0...v1.27.0) (2021-08-14)
+
+
+### Features
+
+* **docker:** actually build the admin ui ([10fcdcc](https://www.github.com/jappyjan/ferdig/commit/10fcdccaf136cd9e10ee6351e152459ce69a675b))
+
 ## [1.26.0](https://www.github.com/jappyjan/ferdig/compare/v1.25.0...v1.26.0) (2021-08-14)
 
 
