@@ -22,12 +22,12 @@ WORKDIR /ferdig
 COPY package.json /ferdig
 COPY yarn.lock /ferdig
 RUN yarn install
+
 COPY ./src /ferdig/src
 COPY ./tsconfig.json /ferdig
 COPY ./tsconfig.compile.json /ferdig
 COPY ./.babelrc /ferdig
 RUN yarn build
-COPY ./dist /ferdig/dist
 
 COPY admin-ui/package.json /ferdig/admin-ui/package.json
 COPY admin-ui/yarn.lock /ferdig/admin-ui/yarn.lock
@@ -47,8 +47,6 @@ COPY admin-ui/tsconfig.json /ferdig/admin-ui/tsconfig.json
 COPY admin-ui/vue.config.js /ferdig/admin-ui/vue.config.js
 
 RUN yarn build
-
-COPY ./public ./public
 
 EXPOSE 8083
 ENV PORT 8083
