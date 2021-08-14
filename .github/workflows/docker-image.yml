@@ -27,9 +27,13 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
+
       - name: Build docker image
         run: |
-          docker build -t $REPOSITORY_URI:$GITHUB_SHA .
+          docker build -t $REPOSITORY_URI:${{steps.package-version.outputs.current-version}} .
           echo Build completed
 
       - name: Push docker image
