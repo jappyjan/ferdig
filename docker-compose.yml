@@ -8,7 +8,7 @@ volumes:
 
 services:
   ferdig:
-    image: docker.pkg.github.com/jappyjan/ferdig/ferdig:latest
+    image: https://ghcr.io/jappyjan/ferdig/ferdig
     restart: always
     expose:
       - 8081
