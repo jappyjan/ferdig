@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.22.0](https://www.github.com/jappyjan/ferdig/compare/v1.21.0...v1.22.0) (2021-08-14)
+
+
+### Features
+
+* **infra:** deploy docker image ([ddeab50](https://www.github.com/jappyjan/ferdig/commit/ddeab5057abee2705be897cd7b2a2e674aee39be))
+
 ## [1.21.0](https://www.github.com/jappyjan/ferdig/compare/v1.20.0...v1.21.0) (2021-08-14)
 
 
