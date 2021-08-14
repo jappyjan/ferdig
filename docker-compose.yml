@@ -18,7 +18,7 @@ services:
       - postgres
       - mongo
     env_file:
-      - .env
+      - docker.env
 
   postgres:
     image: postgres:latest
