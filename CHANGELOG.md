@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.23.0](https://www.github.com/jappyjan/ferdig/compare/v1.22.0...v1.23.0) (2021-08-14)
+
+
+### Features
+
+* **docker-compose:** set registry ([1694c9a](https://www.github.com/jappyjan/ferdig/commit/1694c9a90b44d1d6f516bcbba814f894f055eb12))
+* **docker-compose:** set registry ([b0b5af9](https://www.github.com/jappyjan/ferdig/commit/b0b5af932a914b55ee29805c3ebc4a6a26a3f602))
+
 ## [1.22.0](https://www.github.com/jappyjan/ferdig/compare/v1.21.0...v1.22.0) (2021-08-14)
 
 
