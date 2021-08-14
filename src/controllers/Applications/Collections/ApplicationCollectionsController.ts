@@ -6,7 +6,7 @@ import User from '../../../entity/Users/User';
 import ApplicationCollectionsService from '../../../services/Applications/Collections/ApplicationCollectionsService';
 import ApplicationCollectionsCreatePayloadModel from './Models/ApplicationCollectionsCreatePayloadModel';
 import ApplicationCollectionsListResultModel from './Models/ApplicationCollectionsListResultModel';
-import ApplicationCollectionModel from './models/ApplicationCollectionModel';
+import ApplicationCollectionModel from './Models/ApplicationCollectionModel';
 import ApplicationCollectionsListPayloadModel from './Models/ApplicationCollectionsListPayloadModel';
 import ApplicationCollectionsUpdatePayloadModel from './Models/ApplicationCollectionsUpdatePayloadModel';
 import ApplicationCollectionColumnsController from './Columns/ApplicationCollectionColumnsController';

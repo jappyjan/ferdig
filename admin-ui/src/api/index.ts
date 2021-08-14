@@ -1,5 +1,5 @@
 import {FerdigClient} from '@ferdig/client-js';
-import {getEnvVar} from '../../../src/utils/env';
+import {getEnvVar} from '@/utils/env';
 
 let client: FerdigClient | null = null;
 

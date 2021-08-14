@@ -3,7 +3,7 @@ import {RootState} from '@/store/RootState';
 import {State} from './State';
 import {getFerdigClient} from '@/api';
 import {FerdigUser} from '@ferdig/client-js';
-import {getEnvVar} from '../../../../../src/utils/env';
+import {getEnvVar} from '@/utils/env';
 
 interface LoginPayload {
     email: string;

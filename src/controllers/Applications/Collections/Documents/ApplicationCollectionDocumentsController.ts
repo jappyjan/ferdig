@@ -1,4 +1,5 @@
 import {BodyParams, Controller, Delete, Get, PathParams, Post, Put, Req, Res, UseBefore} from '@tsed/common';
+import {PlatformExpressResponse} from '@tsed/platform-express';
 import {Returns, Summary} from '@tsed/schema';
 import CollectionDocumentsListResponseModel from './Models/CollectionDocumentsListResponseModel';
 import ApplicationCollectionDocumentsService
@@ -224,7 +225,7 @@ export default class ApplicationCollectionDocumentsController implements CrudCon
         @PathParams('columnId') columnId: string,
         @PathParams('fileName') fileName: string,
         @Req() req: Req,
-        @Res() res: Res,
+        @Res() res: PlatformExpressResponse,
     ): Promise<void> {
         const authenticatedUser = req.user as User ?? null;
 
@@ -242,7 +243,7 @@ export default class ApplicationCollectionDocumentsController implements CrudCon
         res.contentType('application/octet-stream');
 
         await new Promise<void>((resolve, reject) => {
-            stream.pipe(res);
+            stream.pipe(res.getRes());
             stream.on('end', () => resolve());
             stream.on('error', (err) => reject(err));
         });

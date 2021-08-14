@@ -4,7 +4,7 @@ import {State} from './State';
 import {getFerdigClient} from '@/api';
 import {State as ApplicationsState} from '../applications/State';
 import {makeCrudActions} from '@/store/module-templates/makeCrudActions';
-import {FerdigUsersListParams, FerdigAuthSignupPayload} from '@ferdig/client-js';
+import {FerdigAuthSignupPayload, FerdigUsersListParams} from '@ferdig/client-js';
 
 export const actions: ActionTree<State, RootState> = {
     ...makeCrudActions<State>(async ({rootState}) => {

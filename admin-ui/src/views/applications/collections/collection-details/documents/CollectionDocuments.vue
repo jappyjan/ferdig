@@ -52,7 +52,8 @@ import Vue from 'vue';
 import Component from 'vue-class-component';
 import {VuetifyDataTableOptions} from '@/shared-types/vuetify-data-table-options';
 import {
-  FerdigApplicationCollection, FerdigApplicationCollectionColumn,
+  FerdigApplicationCollection,
+  FerdigApplicationCollectionColumn,
   FerdigApplicationCollectionColumnValueType,
   FerdigCollectionDocumentDefaultProperties,
   FerdigListResult,
@@ -61,8 +62,8 @@ import {Prop, Watch} from 'vue-property-decorator';
 import {GenericDocumentType, getFerdigClient} from '@/api';
 import {BehaviorSubject} from 'rxjs';
 import {filename} from '@/utils/filename';
-import {getEnvVar} from '../../../../../../../src/utils/env';
 import {State} from 'vuex-class';
+import {getEnvVar} from '@/utils/env';
 
 @Component({})
 export default class CollectionDocuments extends Vue {
