@@ -46,7 +46,10 @@ COPY admin-ui/babel.config.js /ferdig/admin-ui/babel.config.js
 COPY admin-ui/tsconfig.json /ferdig/admin-ui/tsconfig.json
 COPY admin-ui/vue.config.js /ferdig/admin-ui/vue.config.js
 
+WORKDIR /ferdig/admin-ui
 RUN yarn build
+
+WORKDIR /ferdig
 
 EXPOSE 8083
 ENV PORT 8083
