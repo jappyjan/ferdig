@@ -8,14 +8,7 @@ volumes:
 
 services:
   ferdig:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    image: ferdig/server:latest
+    image: docker.pkg.github.com/jappyjan/ferdig/ferdig:latest
     restart: always
     expose:
       - 8081
