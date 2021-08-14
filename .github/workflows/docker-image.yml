@@ -10,6 +10,9 @@ on:
     branches:
       - main
 
+env:
+  REGISTRY: ghcr.io
+
 jobs:
   cancel_previous_runs:
     name: Cancel previous runs
@@ -41,15 +44,26 @@ jobs:
         id: package-version
         uses: martinbeentjes/npm-get-version-action@master
 
-      - name: Build docker image
-        run: |
-          docker build -t $REPOSITORY_URI:${{steps.package-version.outputs.current-version}} .
-          echo Build completed
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push docker image
-        run: |
-          docker push $REPOSITORY_URI:$GITHUB_SHA
-          echo Docker image $REPOSITORY_URI:$GITHUB_SHA pushed to ECR
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.package-version.outputs.current-version}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: update deployment status
         uses: bobheadxi/deployments@v0.4.3
