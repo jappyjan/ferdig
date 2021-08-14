@@ -75,7 +75,7 @@ jobs:
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          repository: user/test-repo/test-app
+          repository: jappyjan/ferdig/ferdig
           registry: docker.pkg.github.com
           tag: ${{ steps.package-version.outputs.current-version}}
 
