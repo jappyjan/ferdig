@@ -11,6 +11,16 @@ on:
       - main
 
 jobs:
+  cancel_previous_runs:
+    name: Cancel previous runs
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.4.1
+        with:
+          access_token: ${{ github.token }}
+
   build:
     runs-on: ubuntu-latest
     steps:
