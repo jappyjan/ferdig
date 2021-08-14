@@ -5,6 +5,9 @@ on:
 
 name: release
 
+env:
+  REGISTRY: ghcr.io
+
 jobs:
   release-please:
     runs-on: ubuntu-latest
