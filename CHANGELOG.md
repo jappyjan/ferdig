@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.30.0](https://www.github.com/jappyjan/ferdig/compare/v1.29.0...v1.30.0) (2021-08-15)
+
+
+### Features
+
+* **docker:** way smaller image ([bc7c823](https://www.github.com/jappyjan/ferdig/commit/bc7c8233f1ecba42e7ebc20f5b166911dea92fa5))
+
 ## [1.29.0](https://www.github.com/jappyjan/ferdig/compare/v1.28.0...v1.29.0) (2021-08-15)
 
 
