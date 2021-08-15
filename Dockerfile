@@ -1,20 +1,4 @@
-###############################################################################
-###############################################################################
-##                      _______ _____ ______ _____                           ##
-##                     |__   __/ ____|  ____|  __ \                          ##
-##                        | | | (___ | |__  | |  | |                         ##
-##                        | |  \___ \|  __| | |  | |                         ##
-##                        | |  ____) | |____| |__| |                         ##
-##                        |_| |_____/|______|_____/                          ##
-##                                                                           ##
-## description     : Dockerfile for TsED Application                         ##
-## author          : TsED team                                               ##
-## date            : 2021-04-14                                              ##
-## version         : 1.1                                                     ##
-##                                                                           ##
-###############################################################################
-###############################################################################
-FROM node:14-alpine
+FROM node:14-alpine as build
 
 RUN apk update && apk add build-base git python
 
@@ -28,6 +12,8 @@ COPY ./tsconfig.json /ferdig
 COPY ./tsconfig.compile.json /ferdig
 COPY ./.babelrc /ferdig
 RUN yarn build
+RUN rm -rf node_modules
+RUN yarn --production
 
 COPY admin-ui/package.json /ferdig/admin-ui/package.json
 COPY admin-ui/yarn.lock /ferdig/admin-ui/yarn.lock
@@ -49,10 +35,17 @@ COPY admin-ui/vue.config.js /ferdig/admin-ui/vue.config.js
 WORKDIR /ferdig/admin-ui
 RUN yarn build
 
+FROM gcr.io/distroless/nodejs:10
+
+COPY --from=build /ferdig/dist /ferdig/dist
+COPY --from=build /ferdig/node_modules /ferdig/node_modules
+COPY --from=build /ferdig/package.json /ferdig/package.json
+COPY --from=build /ferdig/public /ferdig/public
+
 WORKDIR /ferdig
 
 EXPOSE 8083
 ENV PORT 8083
 ENV NODE_ENV production
 
-CMD ["yarn", "start:prod"]
+CMD ["dist/index.js"]
