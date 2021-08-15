@@ -9,8 +9,9 @@ async function bootstrap() {
 
         await platform.listen();
         $log.info('Server initialized');
-    } catch (er) {
-        $log.fatal('Server bootstrap failed', er);
+    } catch (e) {
+        $log.fatal('Server bootstrap failed');
+        $log.fatal(e);
     }
 }
 
