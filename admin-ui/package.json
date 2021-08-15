@@ -10,6 +10,7 @@
   "dependencies": {
     "@ferdig/client-js": "^1.14.1",
     "@hipsjs/flowy-vue": "^1.0.13",
+    "@mdi/font": "^5.9.55",
     "add": "^2.0.6",
     "core-js": "^3.6.5",
     "particles.vue": "^2.13.2",

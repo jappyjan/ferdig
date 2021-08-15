@@ -11,7 +11,7 @@ async function bootstrap() {
         $log.info('Server initialized');
     } catch (e) {
         $log.fatal('Server bootstrap failed');
-        $log.fatal(e);
+        $log.fatal(e.message);
     }
 }
 
