@@ -1,54 +1,53 @@
-FROM node:14-alpine as build
+FROM node:14-alpine as build-ferdig
 
 RUN apk update && apk add build-base git python
 
-# install core dependencies
-WORKDIR /ferdig
-COPY package.json /ferdig
-COPY yarn.lock /ferdig
+# install ferdig dependencies
+WORKDIR ferdig
+COPY package.json .
+COPY yarn.lock .
 RUN yarn install
 
-# install admin-ui dependencies
-WORKDIR admin-ui
-COPY admin-ui/package.json /ferdig/admin-ui/package.json
-COPY admin-ui/yarn.lock /ferdig/admin-ui/yarn.lock
-RUN yarn install
+# build ferdig
+COPY ./src ./src
+COPY ./tsconfig.json .
+COPY ./tsconfig.compile.json .
+COPY ./.babelrc .
 
-# build core
-WORKDIR /
-COPY ./src /ferdig/src
-COPY ./tsconfig.json /ferdig
-COPY ./tsconfig.compile.json /ferdig
-COPY ./.babelrc /ferdig
-
-WORKDIR /ferdig
 RUN yarn build
 
 # remove unnecessary dependencies
 RUN rm -rf node_modules
 RUN yarn --production
 
-# build admin-ui
-WORKDIR /
-COPY admin-ui/src /ferdig/admin-ui/src
-COPY admin-ui/public /ferdig/admin-ui/public
-COPY admin-ui/.browserslistrc /ferdig/admin-ui/.browserslistrc
-COPY admin-ui/.env /ferdig/admin-ui/.env
-COPY admin-ui/.eslintignore /ferdig/admin-ui/.eslintignore
-COPY admin-ui/.eslintrc.js /ferdig/admin-ui/.eslintrc.js
-COPY admin-ui/babel.config.js /ferdig/admin-ui/babel.config.js
-COPY admin-ui/tsconfig.json /ferdig/admin-ui/tsconfig.json
-COPY admin-ui/vue.config.js /ferdig/admin-ui/vue.config.js
+FROM node:14-alpine as build-admin-ui
 
+# install admin-ui dependencies
 WORKDIR /ferdig/admin-ui
+COPY admin-ui/package.json .
+COPY admin-ui/yarn.lock .
+
+RUN yarn install
+
+# build admin-ui
+COPY admin-ui/src ./src
+COPY admin-ui/public ./public
+COPY admin-ui/.browserslistrc ./.browserslistrc
+COPY admin-ui/.env ./.env
+COPY admin-ui/.eslintignore ./.eslintignore
+COPY admin-ui/.eslintrc.js ./.eslintrc.js
+COPY admin-ui/babel.config.js ./babel.config.js
+COPY admin-ui/tsconfig.json ./tsconfig.json
+COPY admin-ui/vue.config.js ./vue.config.js
+
 RUN yarn build
 
 FROM node:14-alpine
 
-COPY --from=build /ferdig/dist /ferdig/dist
-COPY --from=build /ferdig/node_modules /ferdig/node_modules
-COPY --from=build /ferdig/package.json /ferdig/package.json
-COPY --from=build /ferdig/public /ferdig/public
+COPY --from=build-ferdig /ferdig/dist /ferdig/dist
+COPY --from=build-ferdig /ferdig/node_modules /ferdig/node_modules
+COPY --from=build-ferdig /ferdig/package.json /ferdig/package.json
+COPY --from=build-admin-ui /ferdig/public /ferdig/public
 
 WORKDIR /ferdig
 
