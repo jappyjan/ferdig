@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.31.0](https://www.github.com/jappyjan/ferdig/compare/v1.30.0...v1.31.0) (2021-08-19)
+
+
+### Features
+
+* **db:** migrations ([5987484](https://www.github.com/jappyjan/ferdig/commit/598748428265099a90832874a3fed5d7e6e17fb4))
+* **docker:** made it work again ([20e97d7](https://www.github.com/jappyjan/ferdig/commit/20e97d7cd71d18a0a03582e9e7d1b27e8d31f86f))
+* **docker:** made it work again ([30968e8](https://www.github.com/jappyjan/ferdig/commit/30968e80cb0127f427c32986f8660df008efa3af))
+
 ## [1.30.0](https://www.github.com/jappyjan/ferdig/compare/v1.29.0...v1.30.0) (2021-08-15)
 
 
