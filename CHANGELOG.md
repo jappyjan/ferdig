@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.33.0](https://www.github.com/jappyjan/ferdig/compare/v1.32.0...v1.33.0) (2021-08-19)
+
+
+### Features
+
+* **file-upload:** options type ([baf6be8](https://www.github.com/jappyjan/ferdig/commit/baf6be89c507e941158dcc5f60ec9f07520ede7b))
+
 ## [1.32.0](https://www.github.com/jappyjan/ferdig/compare/v1.31.0...v1.32.0) (2021-08-19)
 
 
