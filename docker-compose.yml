@@ -21,7 +21,7 @@ services:
       - postgres
       - mongo
     env_file:
-      - docker.env
+      - .env
 
   postgres:
     image: postgres:latest
@@ -32,7 +32,7 @@ services:
     environment:
       POSTGRES_USER: test
       POSTGRES_PASSWORD: test
-      POSTGRES_DB: test
+      POSTGRES_DB: ferdig
     volumes:
       - postgres:/var/lib/postgresql/data
     hostname: postgres

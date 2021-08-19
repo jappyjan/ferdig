@@ -1,6 +1,7 @@
 // @tsed/cli do not edit
 import {ConnectionOptions} from 'typeorm';
 import {getEnvVar} from '../../utils/env';
+import {rootDir} from '../index';
 
 export const typeormConfig: ConnectionOptions[] = [
     {
@@ -14,18 +15,18 @@ export const typeormConfig: ConnectionOptions[] = [
         synchronize: getEnvVar('TYPEORM_SYNCHRONIZE', 'boolean', false),
         logging: getEnvVar('TYPEORM_LOGGING', 'boolean', false),
         entities: [
-            '${rootDir}/entity/**/*.{js,ts}',
+            `${rootDir}/entity/**/*.{js,ts}`,
         ],
         migrations: [
-            '${rootDir}/migration/**/*.{js,ts}',
+            `db-migrations/**/*.{js,ts}`,
         ],
         subscribers: [
-            '${rootDir}/subscriber/**/*.{js,ts}',
+            `${rootDir}/subscriber/**/*.{js,ts}`,
         ],
         cli: {
-            entitiesDir: '${rootDir}/entity',
-            migrationsDir: '${rootDir}/migration',
-            subscribersDir: '${rootDir}/subscriber',
+            entitiesDir: `${rootDir}/entity`,
+            migrationsDir: `db-migrations`,
+            subscribersDir: `${rootDir}/subscriber`,
         },
         cache: {
             duration: 2000,

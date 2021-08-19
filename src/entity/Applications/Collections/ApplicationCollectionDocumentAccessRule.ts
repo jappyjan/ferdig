@@ -22,13 +22,13 @@ export default class ApplicationCollectionDocumentAccessRule {
     @UpdateDateColumn()
     public updatedAt: Date;
 
-    @Column({nullable: true})
+    @Column({nullable: true, type: 'varchar'})
     public leftSide: string | null;
 
     @Column({enum: CollectionDocumentsAccessRuleComparisonOperator, nullable: true, type: 'enum'})
     public operator: CollectionDocumentsAccessRuleComparisonOperator | null;
 
-    @Column({nullable: true})
+    @Column({nullable: true, type: 'varchar'})
     public rightSide: string | null;
 
     @OneToMany(() => ApplicationCollectionDocumentAccessRule, (andRule) => andRule.parentAndRule)

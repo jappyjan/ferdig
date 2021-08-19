@@ -28,6 +28,6 @@ export default class UserAuth implements Express.User {
     @Column({default: false})
     public isDisabled: boolean;
 
-    @Column({nullable: true})
+    @Column({nullable: true, type: 'varchar'})
     public emailValidationToken: string | null;
 }

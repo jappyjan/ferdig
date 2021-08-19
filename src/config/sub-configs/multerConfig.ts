@@ -1,6 +1,5 @@
-import {Options as MulterOptions} from 'multer';
 import {rootDir} from '../index';
 
-export const multerConfig: MulterOptions = {
+export const multerConfig: TsED.MulterOptions = {
     dest: `${rootDir}/../uploads`,
 }
