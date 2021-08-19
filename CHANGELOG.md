@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.32.0](https://www.github.com/jappyjan/ferdig/compare/v1.31.0...v1.32.0) (2021-08-19)
+
+
+### Features
+
+* **readme:** empty lines ([432915b](https://www.github.com/jappyjan/ferdig/commit/432915b55f4b6d387010c89ff591611e1a1edfdd))
+
 ## [1.31.0](https://www.github.com/jappyjan/ferdig/compare/v1.30.0...v1.31.0) (2021-08-19)
 
 
