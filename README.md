@@ -37,5 +37,3 @@ $ yarn install
 ```batch
 $ yarn serve
 ```
-
-
