@@ -1,6 +1,6 @@
 {
   "name": "ferdig",
-  "version": "1.33.0",
+  "version": "1.33.1",
   "description": "",
   "scripts": {
     "build": "rm -rf ./dist && yarn run tsc && babel src --out-dir dist --extensions \".ts,.tsx\" --source-maps inline",

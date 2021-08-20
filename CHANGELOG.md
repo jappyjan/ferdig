@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.33.1](https://www.github.com/jappyjan/ferdig/compare/v1.33.0...v1.33.1) (2021-08-20)
+
+
+### Miscellaneous
+
+* **lint:** fix linting and grammar ([5167a95](https://www.github.com/jappyjan/ferdig/commit/5167a9599fe4bb06ad5a183ff2b8e7cf108b6e14))
+
 ## [1.33.0](https://www.github.com/jappyjan/ferdig/compare/v1.32.0...v1.33.0) (2021-08-19)
 
 
