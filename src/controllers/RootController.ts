@@ -11,4 +11,11 @@ export default class RootController {
     public getVersion(): string {
         return require(join(rootDir, '..', 'package.json')).version;
     }
+
+    @Get('/health')
+    @Summary('Get API health status')
+    @Returns(200, String)
+    public getHealth(): string {
+        return 'healthy';
+    }
 }
