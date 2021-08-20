@@ -42,6 +42,7 @@ export class Server {
     @Configuration()
     settings: Configuration;
 
+    // noinspection JSUnusedGlobalSymbols
     $beforeRoutesInit(): void {
         this.app
             .use(cors())
@@ -54,6 +55,7 @@ export class Server {
             }));
     }
 
+    // noinspection JSUnusedGlobalSymbols
     $afterRoutesInit(): void {
         this.app.get(`/`, (req: Req, res: Res) => {
             res.redirect('/console')

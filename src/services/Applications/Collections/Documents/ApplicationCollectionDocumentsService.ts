@@ -682,13 +682,13 @@ export default class ApplicationCollectionDocumentsService {
 
     public async getColumnFile(
         authenticatedUser: User | null,
-        identifer: ColumnFileIdentifier,
+        identifier: ColumnFileIdentifier,
     ): Promise<Readable> {
-        const document = await this.getDocument(authenticatedUser, identifer);
-        const fileProperty = document.properties.find((property) => property.column.id === identifer.columnId);
+        const document = await this.getDocument(authenticatedUser, identifier);
+        const fileProperty = document.properties.find((property) => property.column.id === identifier.columnId);
 
         if (!fileProperty) {
-            throw new UnknownFileError(identifer);
+            throw new UnknownFileError(identifier);
         }
 
         return await this.minio.getObject(this.bucketName, fileProperty.value);

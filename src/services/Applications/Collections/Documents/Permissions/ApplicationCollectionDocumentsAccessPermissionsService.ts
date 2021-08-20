@@ -61,9 +61,9 @@ export default class ApplicationCollectionDocumentsAccessPermissionsService {
         authenticatedUser: User | null,
         rule: ApplicationCollectionDocumentAccessRule,
         document: ApplicationCollectionDocument,
-        injectedRuner?: QueryRunner,
+        injectedRunner?: QueryRunner,
     ): Promise<boolean | null> {
-        const manager = injectedRuner ? injectedRuner.manager : this.orm.manager;
+        const manager = injectedRunner ? injectedRunner.manager : this.orm.manager;
 
         const andRules = await manager.getRepository(ApplicationCollectionDocumentAccessRule)
             .find({
@@ -76,7 +76,7 @@ export default class ApplicationCollectionDocumentsAccessPermissionsService {
         }
 
         const permissionsForAndRules: boolean[] = await waitForAllPromises(andRules.map((andRule) => {
-            return this.hasPermission(authenticatedUser, andRule, document, injectedRuner);
+            return this.hasPermission(authenticatedUser, andRule, document, injectedRunner);
         }));
 
         return permissionsForAndRules.reduce((val, sum) => val && sum);
