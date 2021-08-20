@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.35.0](https://www.github.com/jappyjan/ferdig/compare/v1.34.0...v1.35.0) (2021-08-20)
+
+
+### Features
+
+* **file-bucket:** fix s3 client ([710123d](https://www.github.com/jappyjan/ferdig/commit/710123d2b3f8f5c7131c1f43bea0e9ed2a65dbce))
+
 ## [1.34.0](https://www.github.com/jappyjan/ferdig/compare/v1.33.1...v1.34.0) (2021-08-20)
 
 
