@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.0](https://www.github.com/jappyjan/ferdig/compare/v1.33.1...v1.34.0) (2021-08-20)
+
+
+### Features
+
+* **file-bucket:** multiple file bucket provider support ([1bc2b6e](https://www.github.com/jappyjan/ferdig/commit/1bc2b6ea6dd789e59694b90444a20f04d1ce019f))
+
 ### [1.33.1](https://www.github.com/jappyjan/ferdig/compare/v1.33.0...v1.33.1) (2021-08-20)
 
 
