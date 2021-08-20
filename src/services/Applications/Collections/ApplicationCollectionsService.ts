@@ -557,7 +557,7 @@ export default class ApplicationCollectionsService {
             .andWhere('application.id = :applicationId', {applicationId: identifier.applicationId})
             .getMany();
 
-        // TODO: if property contains files, remove files from minio
+        // TODO: if property contains files, remove files from file-bucket
         await manager.getRepository(ApplicationCollectionDocumentProperty)
             .remove(properties);
 

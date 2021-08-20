@@ -24,7 +24,7 @@ import {IO, Server, Socket, SocketService} from '@tsed/socketio';
 import UsersService from '../../../Users/UsersService';
 import {documentToObject} from '../../../../entity/Applications/Collections/utils/document-to-object';
 import {OnCommitAction, runInTransaction, waitForAllPromises} from '../../../../utils/typeorm.utils';
-import {DEFAULT_MINIO_CONNECTION, MinioFile} from '../../../shared-providers/defaultMinioConnection';
+import {DEFAULT_FILE_BUCKET_CONNECTION} from '../../../shared-providers/defaultFileBucket';
 import {CollectionColumnIdentifier} from '../CollectionColumnIdentifier';
 import {DocumentCreateAndUpdateData} from './DocumentCreateAndUpdateData';
 import {DocumentIdentifier} from './DocumentIdentifier';
@@ -33,14 +33,17 @@ import {Readable} from 'stream';
 import UnknownFileError from './errors/UnknownFileError';
 import {handleSocketAuth} from '../../../../utils/sockets';
 import {makeLogger} from '../../../../utils/logger';
+import {BucketFile} from '../../../shared-providers/FileBucket/IFileBucketClient';
+
+export interface FileUpload {
+    originalName: string;
+    data: BucketFile;
+}
 
 @SocketService('applications/collections/documents')
 export default class ApplicationCollectionDocumentsService {
     @Constant('collections.listDocuments.maxFilters')
     private readonly listDocumentsMaxFilters: number;
-
-    @Constant('minio.bucket')
-    private readonly bucketName: string;
 
     private readonly io: Server;
     private readonly orm: DEFAULT_DB_CONNECTION;
@@ -48,13 +51,13 @@ export default class ApplicationCollectionDocumentsService {
     private readonly permissionsService: ApplicationCollectionDocumentsAccessPermissionsService;
     private readonly collectionsService: ApplicationCollectionsService;
     private readonly clientToApplicationMapping: Record<string, Array<{ socket: Socket, user: User }>>;
-    private readonly minio: DEFAULT_MINIO_CONNECTION;
+    private readonly fileBucket: DEFAULT_FILE_BUCKET_CONNECTION;
     private readonly $log: Logger;
 
     public constructor(
         @IO io: Server,
         @Inject(DEFAULT_DB_CONNECTION) orm: DEFAULT_DB_CONNECTION,
-        @Inject(DEFAULT_MINIO_CONNECTION) minio: DEFAULT_MINIO_CONNECTION,
+        @Inject(DEFAULT_FILE_BUCKET_CONNECTION) fileBucket: DEFAULT_FILE_BUCKET_CONNECTION,
         usersService: UsersService,
         collectionsAccessPermissionsService: ApplicationCollectionDocumentsAccessPermissionsService,
         collectionsService: ApplicationCollectionsService,
@@ -65,7 +68,7 @@ export default class ApplicationCollectionDocumentsService {
         this.usersService = usersService;
         this.permissionsService = collectionsAccessPermissionsService;
         this.collectionsService = collectionsService;
-        this.minio = minio;
+        this.fileBucket = fileBucket;
         this.$log = makeLogger('ApplicationCollectionDocumentsService');
     }
 
@@ -332,18 +335,18 @@ export default class ApplicationCollectionDocumentsService {
                     collectionId,
                     documentId,
                     columnId: column.id,
-                }, value as MinioFile);
+                }, value as FileUpload);
                 break;
         }
 
         return valueAsString;
     }
 
-    private async uploadDocumentPropertyFile(identifier: CollectionColumnIdentifier & { documentId: string }, file: MinioFile): Promise<string> {
+    private async uploadDocumentPropertyFile(identifier: CollectionColumnIdentifier & { documentId: string }, file: FileUpload): Promise<string> {
         const {applicationId, collectionId, documentId, columnId} = identifier;
         const objectName = `/applications/${applicationId}/collections/${collectionId}/documents/${documentId}/columns/${columnId}/${file.originalName}`;
 
-        await this.minio.putObject(this.bucketName, objectName, file.data);
+        await this.fileBucket.upload(objectName, file.data);
 
         return objectName;
     }
@@ -672,7 +675,7 @@ export default class ApplicationCollectionDocumentsService {
     ) {
         if (property.column.valueType === ApplicationCollectionColumnValueType.File) {
             onCommit(async () => {
-                await this.minio.removeObject(this.bucketName, property.value);
+                await this.fileBucket.delete(property.value);
             });
         }
 
@@ -691,6 +694,6 @@ export default class ApplicationCollectionDocumentsService {
             throw new UnknownFileError(identifier);
         }
 
-        return await this.minio.getObject(this.bucketName, fileProperty.value);
+        return await this.fileBucket.download(fileProperty.value);
     }
 }

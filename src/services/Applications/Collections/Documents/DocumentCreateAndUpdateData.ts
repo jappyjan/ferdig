@@ -1,4 +1,4 @@
 import {DocumentAsObjectValueType} from '../../../../entity/Applications/Collections/ApplicationCollectionDocument';
-import {MinioFile} from '../../../shared-providers/defaultMinioConnection';
+import {FileUpload} from './ApplicationCollectionDocumentsService';
 
-export type DocumentCreateAndUpdateData = Record<string, DocumentAsObjectValueType | MinioFile | Array<DocumentAsObjectValueType | MinioFile>>;
+export type DocumentCreateAndUpdateData = Record<string, DocumentAsObjectValueType | FileUpload | Array<DocumentAsObjectValueType | FileUpload>>;
