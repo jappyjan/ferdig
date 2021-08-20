@@ -31,16 +31,12 @@ function getMinioConfig(): MinioConfig {
 
 export type S3Config = {
     type: FileBucketType.S3;
-    accessKey: string;
-    secretKey: string;
     bucket: string;
 };
 
 function getS3Config(): S3Config {
     return {
         type: FileBucketType.S3,
-        accessKey: getEnvVar('AWS_S3_ACCESS_KEY', 'string'),
-        secretKey: getEnvVar('AWS_S3_SECRET_KEY', 'string'),
         bucket: getEnvVar('AWS_S3_BUCKET', 'string'),
     };
 }

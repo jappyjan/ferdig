@@ -9,10 +9,7 @@ export default class S3Client implements IFileBucketClient {
     constructor(options: S3Config) {
         this.options = options;
 
-        this.s3 = new S3({
-            accessKeyId: options.accessKey,
-            secretAccessKey: options.secretKey
-        });
+        new S3();
     }
 
     public async upload(key: string, file: BucketFile) {
