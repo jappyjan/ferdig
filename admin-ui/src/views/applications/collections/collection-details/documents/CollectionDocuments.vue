@@ -57,10 +57,10 @@ import {
   FerdigApplicationCollectionColumnValueType,
   FerdigCollectionDocumentDefaultProperties,
   FerdigListResult,
+  FerdigObservation,
 } from '@ferdig/client-js';
 import {Prop, Watch} from 'vue-property-decorator';
 import {GenericDocumentType, getFerdigClient} from '@/api';
-import {BehaviorSubject} from 'rxjs';
 import {filename} from '@/utils/filename';
 import {State} from 'vuex-class';
 import {getEnvVar} from '@/utils/env';
@@ -87,7 +87,7 @@ export default class CollectionDocuments extends Vue {
   private documents: (GenericDocumentType & FerdigCollectionDocumentDefaultProperties)[] = [];
   private error: string | null = null;
   private showError = false;
-  private listObserver: BehaviorSubject<FerdigListResult<GenericDocumentType & FerdigCollectionDocumentDefaultProperties>> | null = null;
+  private listObserver: FerdigObservation<FerdigListResult<GenericDocumentType & FerdigCollectionDocumentDefaultProperties>> | null = null;
   private totalItems = 0;
   private fileName = filename;
 
@@ -138,6 +138,13 @@ export default class CollectionDocuments extends Vue {
 
       return mappedDocument;
     });
+  }
+
+  // noinspection JSUnusedLocalSymbols
+  private destroyed() {
+    if (this.listObserver) {
+      this.listObserver.complete();
+    }
   }
 
   @Watch('tableOptions', {deep: true})

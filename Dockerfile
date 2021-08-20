@@ -1,12 +1,13 @@
-FROM node:14-alpine as build-ferdig
+FROM node:15-alpine as build-ferdig
 
 RUN apk update && apk add build-base git python
 
+WORKDIR /app
+
 # install ferdig dependencies
-WORKDIR ferdig
-COPY package.json .
-COPY yarn.lock .
-RUN yarn install
+COPY package.json ./
+COPY yarn.lock ./
+RUN yarn install --frozen-lockfile
 
 # build ferdig
 COPY ./src ./src
@@ -18,18 +19,18 @@ RUN yarn build
 
 # remove unnecessary dependencies
 RUN rm -rf node_modules
-RUN yarn --production
+RUN yarn install --production=true --frozen-lockfile
 
-FROM node:14-alpine as build-admin-ui
+FROM node:15-alpine as build-admin-ui
+
+WORKDIR /app
 
 # install admin-ui dependencies
-WORKDIR /ferdig/admin-ui
-COPY admin-ui/package.json .
-COPY admin-ui/yarn.lock .
+COPY admin-ui/package.json ./
+COPY admin-ui/yarn.lock ./
+RUN yarn install --frozen-lockfile
 
-RUN yarn install
-
-# build admin-ui
+# copy resources
 COPY admin-ui/src ./src
 COPY admin-ui/public ./public
 COPY admin-ui/.browserslistrc ./.browserslistrc
@@ -40,14 +41,15 @@ COPY admin-ui/babel.config.js ./babel.config.js
 COPY admin-ui/tsconfig.json ./tsconfig.json
 COPY admin-ui/vue.config.js ./vue.config.js
 
-RUN yarn build
+# build admin-ui
+RUN yarn build --dest dist
 
-FROM node:14-alpine
+FROM node:15-alpine as final-image
 
-COPY --from=build-ferdig /ferdig/dist /ferdig/dist
-COPY --from=build-ferdig /ferdig/node_modules /ferdig/node_modules
-COPY --from=build-ferdig /ferdig/package.json /ferdig/package.json
-COPY --from=build-admin-ui /ferdig/public /ferdig/public
+COPY --from=build-ferdig /app/dist /ferdig/dist
+COPY --from=build-ferdig /app/node_modules /ferdig/node_modules
+COPY --from=build-ferdig /app/package.json /ferdig/package.json
+COPY --from=build-admin-ui /app/dist /ferdig/public
 
 WORKDIR /ferdig
 

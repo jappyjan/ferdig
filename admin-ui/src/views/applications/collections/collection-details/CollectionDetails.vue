@@ -71,6 +71,7 @@ import {
   FerdigApplicationCollection,
   FerdigApplicationCollectionColumn,
   FerdigCollectionDocumentDefaultProperties,
+  FerdigObservation,
 } from '@ferdig/client-js';
 import {Prop, Watch} from 'vue-property-decorator';
 import {GenericDocumentType, getFerdigClient} from '@/api';
@@ -82,7 +83,6 @@ import CollectionDocumentEditorBottomSheet
   from '@/components/applications/collections/CollectionDocumentEditorBottomSheet.vue';
 import {State} from 'vuex-class';
 import {Breadcrumb} from '@/store/RootState';
-import {BehaviorSubject} from 'rxjs';
 
 @Component({
   components: {
@@ -99,7 +99,7 @@ export default class CollectionDetails extends Vue {
   @Prop({required: true})
   private collectionId!: string;
 
-  private collectionSubject: BehaviorSubject<FerdigApplicationCollection | null> | null = null;
+  private collectionSubject: FerdigObservation<FerdigApplicationCollection | null> | null = null;
   private collection: FerdigApplicationCollection | null = null;
   private isLoadingCollection = true;
   private error: string | null = null;
@@ -133,6 +133,13 @@ export default class CollectionDetails extends Vue {
         tab: tabName,
       },
     });
+  }
+
+  // noinspection JSUnusedLocalSymbols
+  private destroyed() {
+    if (this.collectionSubject) {
+      this.collectionSubject.complete();
+    }
   }
 
   @Watch('activeApplication', {immediate: true})
@@ -172,6 +179,10 @@ export default class CollectionDetails extends Vue {
 
     try {
       this.isLoadingCollection = true;
+
+      if (this.collectionSubject) {
+        this.collectionSubject.complete();
+      }
 
       this.collectionSubject = await getFerdigClient()
           .applications
