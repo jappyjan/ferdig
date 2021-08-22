@@ -78,7 +78,7 @@ export default class AutomationNodeLogs extends Vue {
   private async fetchLogs() {
     try {
       this.isFetching = true;
-      this.logs = await getFerdigClient()
+      this.logs = await (await getFerdigClient())
           .applications
           .automations(this.node.applicationId)
           .getLogsOfNode(this.node.automationId, this.node.id);

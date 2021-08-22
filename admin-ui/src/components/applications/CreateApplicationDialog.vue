@@ -175,7 +175,9 @@ export default class CreateApplicationDialog extends Vue {
     try {
       this.isCreating = true;
 
-      const app = await getFerdigClient().applications.create(this.appCreateData);
+      const app = await (await getFerdigClient())
+          .applications
+          .create(this.appCreateData);
       this.$store.commit('applications/save', app);
       await this.$router.push(`/applications/${app.id}`);
     } catch (e) {

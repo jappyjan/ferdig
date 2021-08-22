@@ -1,19 +1,21 @@
 import {NotificationHandler, NotificationPayload} from '../NotificationHandler';
 import User from '../../../../entity/Users/User';
-import {Service} from '@tsed/di';
+import {Configuration, Service} from '@tsed/di';
 import {createTransport, Transporter} from 'nodemailer';
 import ApplicationConfigurationEmail
     from '../../../../entity/Applications/Configuration/E-Mail/ApplicationConfigurationEmail';
 import Application from '../../../../entity/Applications/Application';
 import {$log} from '@tsed/common';
 import {LoggerLevel} from 'nodemailer/lib/shared';
-import {Const} from '@tsed/schema';
 import {emailConfig} from '../../../../config/sub-configs/email';
 
 @Service()
 export default class EmailHandler implements NotificationHandler {
-    @Const('email')
-    private config!: typeof emailConfig;
+    private readonly config: typeof emailConfig;
+
+    public constructor(@Configuration() config: Configuration) {
+        this.config = config.email;
+    }
 
     public async verifyConfigurationAndCreateTransport(config: ApplicationConfigurationEmail): Promise<Transporter> {
         let auth: undefined | { user: string, pass: string } = undefined;
@@ -65,7 +67,7 @@ export default class EmailHandler implements NotificationHandler {
                 },
                 level(level: LoggerLevel) {
                     $log.level = level;
-                }
+                },
             },
             debug: this.config.debug,
         });

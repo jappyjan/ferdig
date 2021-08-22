@@ -122,7 +122,7 @@ export default class CollectionColumnsEditor extends Vue {
     }
 
     try {
-      const column = await getFerdigClient()
+      const column = await (await getFerdigClient())
           .applications
           .collections(this.applicationId)
           .columns(this.collection.id)
@@ -170,7 +170,7 @@ export default class CollectionColumnsEditor extends Vue {
     }
 
     try {
-      await getFerdigClient()
+      await (await getFerdigClient())
           .applications
           .collections(this.applicationId)
           .columns(this.collection.id)

@@ -19,7 +19,7 @@
                dismissible
                type="error"
       >
-        {{error}}
+        {{ error }}
       </v-alert>
 
       <v-card-actions>
@@ -64,7 +64,7 @@ export default class RegistrationForm extends Vue {
   };
 
   private async registrate() {
-    const form = this.$refs.form as unknown as {validate: () => boolean};
+    const form = this.$refs.form as unknown as { validate: () => boolean };
     if (!form.validate()) {
       return;
     }
@@ -72,11 +72,13 @@ export default class RegistrationForm extends Vue {
     try {
       this.isRegistrating = true;
 
-      await getFerdigClient().auth.signUp({
-        email: this.email,
-        password: this.password,
-        applicationId: null,
-      });
+      await (await getFerdigClient())
+          .auth
+          .signUp({
+            email: this.email,
+            password: this.password,
+            applicationId: null,
+          });
 
       await this.$store.dispatch('auth/login', {
         email: this.email,

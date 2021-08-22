@@ -136,7 +136,7 @@ export default class AppNavigationDrawer extends Vue {
 
     try {
       // TODO: implement logo on server side
-      const logoBlob = await getFerdigClient()
+      const logoBlob = await (await getFerdigClient())
           .applications
           .getLogo(this.activeApplication.id);
       this.activeApplicationLogoSrc = URL.createObjectURL(logoBlob);

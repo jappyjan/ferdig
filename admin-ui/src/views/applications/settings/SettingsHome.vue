@@ -96,7 +96,7 @@ export default class SettingsHome extends Vue {
 
     try {
       this.isSettingVerifyEmailForLogin = true;
-      await getFerdigClient()
+      await (await getFerdigClient())
           .applications
           .configuration(this.activeApplication.id)
           .setLoginRequiresValidEmail(val);
@@ -125,7 +125,7 @@ export default class SettingsHome extends Vue {
 
     try {
       this.isRemoving = true;
-      await getFerdigClient()
+      await (await getFerdigClient())
           .applications
           .remove(this.activeApplication.id);
 

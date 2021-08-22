@@ -7,13 +7,13 @@ import ApplicationsListResponseModel from '../Models/ApplicationsListResponseMod
 import {Authorize} from '@tsed/passport';
 import ApplicationAutomation from '../../../entity/Applications/Automations/ApplicationAutomation';
 import ApplicationAutomationsService from '../../../services/Applications/Automations/ApplicationAutomationsService';
-import User from '../../../entity/Users/User';
 import ApplicationAutomationsListPayloadModel from './Models/ApplicationAutomationsListPayloadModel';
 import ApplicationAutomationsCreatePayloadModel from './Models/ApplicationAutomationsCreatePayloadModel';
 import ApplicationAutomationsUpdatePayloadModel from './Models/ApplicationAutomationsUpdatePayloadModel';
 import ApplicationAutomationFlowNodeLog
     from '../../../entity/Applications/Automations/ApplicationAutomationFlowNodeLog';
 import ApplicationAutomationFlowNodeLogModel from './Models/ApplicationAutomationFlowNodeLogModel';
+import {getUserFromRequest} from '../../../utils/auth';
 
 @Controller({
     path: '/:applicationId/automations',
@@ -34,7 +34,7 @@ export default class ApplicationAutomationsController implements CrudController<
         @BodyParams() payload: ApplicationAutomationsCreatePayloadModel,
         @Req() req: Req,
     ): Promise<ApplicationAutomation> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
 
         return await this.automationsService.create(
             authenticatedUser,
@@ -52,7 +52,7 @@ export default class ApplicationAutomationsController implements CrudController<
         @PathParams('automationId') automationId: string,
         @Req() req: Req,
     ): Promise<ApplicationAutomation> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
 
         return await this.automationsService.getByIdentifier(
             authenticatedUser,
@@ -72,7 +72,7 @@ export default class ApplicationAutomationsController implements CrudController<
         @BodyParams() payload: ApplicationAutomationsListPayloadModel,
         @Req() req: Req,
     ): Promise<ListResult<ApplicationAutomation>> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
 
         return this.automationsService.list(
             authenticatedUser,
@@ -90,7 +90,7 @@ export default class ApplicationAutomationsController implements CrudController<
         @PathParams('automationId') automationId: string,
         @Req() req: Req,
     ): Promise<'success'> {
-        const authenticatedUser = req.user as User ?? null;
+        const authenticatedUser = getUserFromRequest(req);
 
         await this.automationsService.remove(
             authenticatedUser,
@@ -113,7 +113,7 @@ export default class ApplicationAutomationsController implements CrudController<
         @BodyParams() payload: ApplicationAutomationsUpdatePayloadModel,
         @Req() req: Req,
     ): Promise<ApplicationAutomation> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
 
         return await this.automationsService.update(
             authenticatedUser,
@@ -135,7 +135,7 @@ export default class ApplicationAutomationsController implements CrudController<
         @PathParams('nodeId') nodeId: string,
         @Req() req: Req,
     ): Promise<ApplicationAutomationFlowNodeLog[]> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
 
         return await this.automationsService.getLogsOfNode(
             authenticatedUser,

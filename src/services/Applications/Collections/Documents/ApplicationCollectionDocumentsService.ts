@@ -50,7 +50,7 @@ export default class ApplicationCollectionDocumentsService {
     private readonly usersService: UsersService;
     private readonly permissionsService: ApplicationCollectionDocumentsAccessPermissionsService;
     private readonly collectionsService: ApplicationCollectionsService;
-    private readonly clientToApplicationMapping: Record<string, Array<{ socket: Socket, user: User }>>;
+    private readonly clients: Array<{ socket: Socket, user: User | null }>;
     private readonly fileBucket: DEFAULT_FILE_BUCKET_CONNECTION;
     private readonly $log: Logger;
 
@@ -62,7 +62,7 @@ export default class ApplicationCollectionDocumentsService {
         collectionsAccessPermissionsService: ApplicationCollectionDocumentsAccessPermissionsService,
         collectionsService: ApplicationCollectionsService,
     ) {
-        this.clientToApplicationMapping = {};
+        this.clients = [];
         this.orm = orm;
         this.io = io;
         this.usersService = usersService;
@@ -80,25 +80,7 @@ export default class ApplicationCollectionDocumentsService {
             usersService: this.usersService,
         });
 
-        let applicationId = '__CONSOLE_ACCESS__';
-        if (!user.auth.hasConsoleAccess) {
-            if (!user.application) {
-                this.$log.info('socket auth not accepted');
-                socket.emit('authorize:response', {
-                    state: 'error',
-                    error: 'User has no access to any application',
-                });
-                return;
-            }
-
-            applicationId = user.application.id;
-        }
-
-        if (!Array.isArray(this.clientToApplicationMapping[applicationId])) {
-            this.clientToApplicationMapping[applicationId] = [];
-        }
-
-        this.clientToApplicationMapping[applicationId].push({socket, user});
+        this.clients.push({socket, user});
     }
 
     // noinspection JSMethodCanBeStatic
@@ -111,21 +93,17 @@ export default class ApplicationCollectionDocumentsService {
             .leftJoinAndSelect('column.readAccessRule', 'readAccessRule');
     }
 
-    private emitDocumentChange(identifier: DocumentIdentifier, document: ApplicationCollectionDocument | null) {
-        this.emitDocumentChangeAsync(identifier, document)
+    private emitDocumentChange(identifier: DocumentIdentifier, collection: ApplicationCollection, document: ApplicationCollectionDocument | null) {
+        this.emitDocumentChangeAsync(identifier, collection, document)
             .catch((e) => this.$log.error(e));
     }
 
     private async emitDocumentChangeAsync(
         identifier: DocumentIdentifier,
+        collection: ApplicationCollection,
         document: ApplicationCollectionDocument | null,
     ) {
-        const clients = [
-            ...this.clientToApplicationMapping[identifier.applicationId] || [],
-            ...this.clientToApplicationMapping['__CONSOLE_ACCESS__'] || [],
-        ];
-
-        const emitToSingleClient = async (client: { user: User, socket: Socket }) => {
+        const emitToSingleClient = async (client: { user: User | null, socket: Socket }) => {
             if (document) {
                 const collection = await this.collectionsService.getCollection(client.user, identifier);
                 await this.permissionsService.hasPermissionOrFails(client.user, collection.readAccessRule, document);
@@ -141,7 +119,23 @@ export default class ApplicationCollectionDocumentsService {
             client.socket.emit('applications/collections/documents::change', payload);
         }
 
-        await waitForAllPromises(clients.map(emitToSingleClient));
+        if (!document) {
+            await waitForAllPromises(this.clients.map(emitToSingleClient));
+        }
+
+        const clientsWithPermissionFlag = await waitForAllPromises(this.clients.map((client) => {
+            return this.permissionsService.hasPermission(client.user, collection.readAccessRule, document as ApplicationCollectionDocument)
+                .then((hasAccess) => {
+                    return {
+                        ...client,
+                        hasAccess,
+                    };
+                });
+        }));
+
+        const clientsWithPermission = clientsWithPermissionFlag.filter((client) => client.hasAccess);
+
+        await waitForAllPromises(clientsWithPermission.map(emitToSingleClient));
     }
 
     public async listDocuments(
@@ -458,10 +452,14 @@ export default class ApplicationCollectionDocumentsService {
             runner,
         );
 
-        this.emitDocumentChange({
-            ...collectionIdentifier,
-            documentId: document.id,
-        }, document);
+        this.emitDocumentChange(
+            {
+                ...collectionIdentifier,
+                documentId: document.id,
+            },
+            collection,
+            document,
+        );
 
         return document;
     }
@@ -610,7 +608,7 @@ export default class ApplicationCollectionDocumentsService {
             return updateOneColumn(internalName);
         }));
 
-        this.emitDocumentChange(identifier, document);
+        this.emitDocumentChange(identifier, collection, document);
 
         return document;
     }
@@ -665,7 +663,7 @@ export default class ApplicationCollectionDocumentsService {
         await manager.getRepository(ApplicationCollectionDocument)
             .remove(document);
 
-        this.emitDocumentChange(identifier, null);
+        this.emitDocumentChange(identifier, collection, null);
     }
 
     private async removeDocumentProperty(

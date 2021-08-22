@@ -126,7 +126,7 @@ export default class AutomationsHome extends Vue {
       return;
     }
 
-    const automation = await getFerdigClient()
+    const automation = await (await getFerdigClient())
         .applications
         .automations(this.activeApplication.id)
         .create({
@@ -153,7 +153,7 @@ export default class AutomationsHome extends Vue {
     }
 
     try {
-      const updatedAutomation = await getFerdigClient()
+      const updatedAutomation = await (await getFerdigClient())
           .applications
           .automations(this.activeApplication.id)
           .update(automation.id, {

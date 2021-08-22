@@ -194,7 +194,7 @@ export default class NotificationTemplateEditor extends Vue {
 
     try {
       this.isSaving = true;
-      this.template = await getFerdigClient()
+      this.template = await (await getFerdigClient())
           .applications
           .notificationTemplates(this.activeApplication.id)
           .update(this.templateId, this.template);
@@ -226,7 +226,7 @@ export default class NotificationTemplateEditor extends Vue {
 
     try {
       this.isRemoving = true;
-      await getFerdigClient()
+      await (await getFerdigClient())
           .applications
           .notificationTemplates(this.activeApplication.id)
           .remove(this.templateId);

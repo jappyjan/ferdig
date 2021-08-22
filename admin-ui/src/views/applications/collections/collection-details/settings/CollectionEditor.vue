@@ -149,7 +149,7 @@ export default class CollectionEditor extends Vue {
     try {
       this.isSaving = true;
 
-      this.collectionData = await getFerdigClient()
+      this.collectionData = await (await getFerdigClient())
           .applications
           .collections(this.applicationId)
           .update(
@@ -184,7 +184,7 @@ export default class CollectionEditor extends Vue {
 
     try {
       this.isDeleting = true;
-      await getFerdigClient()
+      await (await getFerdigClient())
           .applications
           .collections(this.applicationId)
           .remove(this.collection.id);

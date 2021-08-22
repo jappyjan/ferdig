@@ -13,6 +13,6 @@ export const actions: ActionTree<State, RootState> = {
             throw new Error('Cannot get Automations: no activeApplication');
         }
 
-        return getFerdigClient().applications.automations(applicationsState.activeApplication.id);
+        return (await getFerdigClient()).applications.automations(applicationsState.activeApplication.id);
     }),
 }

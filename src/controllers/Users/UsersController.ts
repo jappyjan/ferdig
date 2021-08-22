@@ -9,6 +9,7 @@ import {CrudController} from '../CrudController';
 import User from '../../entity/Users/User';
 import {ListResult} from '../../services/shared-types/ListResult';
 import UserModel from '../Auth/models/UserModel';
+import {getUserFromRequest} from '../../utils/auth';
 
 @Controller({
     path: '/users',
@@ -44,7 +45,7 @@ export default class UsersController implements CrudController<User> {
         @PathParams('userId') userId: string,
         @Req() req: Req,
     ): Promise<User> {
-        const authenticatedUser = req.user as User ?? null;
+        const authenticatedUser = getUserFromRequest(req);
 
         return await this.usersService.getOneByIdOrFail(
             authenticatedUser,
@@ -60,7 +61,7 @@ export default class UsersController implements CrudController<User> {
         @PathParams('userId') userId: string,
         @Req() req: Req,
     ): Promise<'success'> {
-        const authenticatedUser = req.user as User ?? null;
+        const authenticatedUser = getUserFromRequest(req);
 
         await this.usersService.remove(
             authenticatedUser,

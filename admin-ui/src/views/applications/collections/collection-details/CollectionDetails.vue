@@ -184,7 +184,7 @@ export default class CollectionDetails extends Vue {
         this.collectionSubject.complete();
       }
 
-      this.collectionSubject = await getFerdigClient()
+      this.collectionSubject = await (await getFerdigClient())
           .applications
           .collections(this.activeApplication.id)
           .getAndObserve(this.collectionId);

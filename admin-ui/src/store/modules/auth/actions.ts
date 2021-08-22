@@ -12,7 +12,7 @@ interface LoginPayload {
 
 export const actions: ActionTree<State, RootState> = {
     async setSession({commit, dispatch}, {user, token}) {
-        getFerdigClient().setToken(token);
+        (await getFerdigClient()).setToken(token);
         const tokenLocalStorageKey = getEnvVar('VUE_APP_FERDIG_TOKEN_LOCAL_STORAGE_KEY', 'string');
         localStorage.setItem(tokenLocalStorageKey, token);
         commit('setUser', user);
@@ -21,7 +21,13 @@ export const actions: ActionTree<State, RootState> = {
         await dispatch('applications/fetchAll', null, {root: true});
     },
     async login({dispatch}, payload: LoginPayload) {
-        const session = await getFerdigClient().auth.startSession(payload);
+        console.log('login', payload);
+        const session = await (await getFerdigClient())
+            .auth
+            .startSession({
+                data: payload,
+                protocol: 'local',
+            });
 
         const user = Object.assign({}, session) as FerdigUser;
         delete (user as unknown as { token: unknown }).token;

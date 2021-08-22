@@ -18,7 +18,7 @@
           color="deep-purple"
       />
 
-      <ferdig-update-banner />
+      <ferdig-update-banner/>
 
       <v-breadcrumbs v-if="breadcrumbs.length > 0" :items="breadcrumbs"/>
 
@@ -73,8 +73,10 @@ export default class App extends Vue {
       return;
     }
 
-    getFerdigClient().setToken(previousToken);
-    const user = await getFerdigClient().auth.getCurrentUser();
+    const client = await getFerdigClient();
+    client.setToken(previousToken);
+
+    const user = await client.auth.getCurrentUser();
     await this.$store.dispatch('auth/setSession', {user, token: previousToken});
   }
 }

@@ -307,7 +307,7 @@ export default class AutomationFlowEditor extends Vue {
 
     try {
       this.isSaving = true;
-      await getFerdigClient()
+      await (await getFerdigClient())
           .applications
           .automations(this.activeApplication.id)
           .update(this.automationId, {
@@ -345,7 +345,7 @@ export default class AutomationFlowEditor extends Vue {
 
     try {
       this.isRemoving = true;
-      await getFerdigClient()
+      await (await getFerdigClient())
           .applications
           .automations(this.activeApplication.id)
           .remove(this.automationId);

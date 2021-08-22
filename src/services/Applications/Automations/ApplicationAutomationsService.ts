@@ -294,11 +294,11 @@ export default class ApplicationAutomationsService {
     }
 
     public async getByIdentifier(
-        authenticatedUser: User,
+        authenticatedUser: User | null,
         identifier: ApplicationAutomationIdentifier,
         injectedRunner?: QueryRunner,
     ): Promise<ApplicationAutomation> {
-        if (!authenticatedUser.auth.hasConsoleAccess) {
+        if (!authenticatedUser?.auth.hasConsoleAccess) {
             throw new AccessToEntityDeniedException();
         }
 

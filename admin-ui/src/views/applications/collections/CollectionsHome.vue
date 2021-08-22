@@ -110,7 +110,7 @@ export default class UsersHome extends Vue {
       return;
     }
 
-    const collection = await getFerdigClient()
+    const collection = await (await getFerdigClient())
         .applications
         .collections(this.activeApplication.id)
         .create({

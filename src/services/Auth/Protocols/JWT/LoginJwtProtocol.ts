@@ -1,7 +1,6 @@
 import {$log, Req} from '@tsed/common';
 import {Arg, OnVerify, Protocol} from '@tsed/passport';
 import {ExtractJwt, Strategy, StrategyOptions} from 'passport-jwt';
-import User from '../../../../entity/Users/User';
 import {getEnvVar} from '../../../../utils/env';
 import WrongTokenError from './Errors/WrongTokenError';
 import UsersService from '../../../Users/UsersService';
@@ -29,10 +28,14 @@ export class LoginJwtProtocol implements OnVerify {
     public async $onVerify(
         @Req() req: Req,
         @Arg(0) jwtPayload: { sub: string },
-    ): Promise<User | false> {
+    ): Promise<Express.User | boolean> {
         try {
             const userId = jwtPayload.sub;
-            const user = await this.usersService.getOneWithoutAuthCheck({id: userId});
+
+            let user: Express.User | false = {id: 'anonymous'};
+            if (userId !== 'anonymous') {
+                user = await this.usersService.getOneWithoutAuthCheck({id: userId});
+            }
 
             req.user = user;
             return user;

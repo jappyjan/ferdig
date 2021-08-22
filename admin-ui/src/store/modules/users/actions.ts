@@ -14,7 +14,7 @@ export const actions: ActionTree<State, RootState> = {
             throw new Error('Cannot get Users: no activeApplication');
         }
 
-        const usersClient = getFerdigClient().users;
+        const usersClient = (await getFerdigClient()).users;
         const oldCreate = usersClient.create.bind(usersClient);
         usersClient.create = ({email, password}: Omit<FerdigAuthSignupPayload, 'applicationId'>) => oldCreate({
             applicationId: applicationsState.activeApplication?.id ?? '-',

@@ -184,7 +184,7 @@ export default class CollectionDocumentEditorBottomSheet extends Vue {
     try {
       this.isSaving = true;
 
-      const documentsClient = getFerdigClient()
+      const documentsClient = (await getFerdigClient())
           .applications
           .collections(this.applicationId)
           .documents<GenericDocumentType>(this.collection.id);
@@ -231,7 +231,7 @@ export default class CollectionDocumentEditorBottomSheet extends Vue {
     try {
       this.isDeleting = true;
 
-      await getFerdigClient()
+      await (await getFerdigClient())
           .applications
           .collections(this.applicationId)
           .documents(this.collection.id)

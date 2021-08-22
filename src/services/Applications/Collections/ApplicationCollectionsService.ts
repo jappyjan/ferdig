@@ -2,7 +2,7 @@ import {DEFAULT_DB_CONNECTION} from '../../shared-providers/defaultDBConnection'
 import Application from '../../../entity/Applications/Application';
 import ApplicationCollection from '../../../entity/Applications/Collections/ApplicationCollection';
 import CollectionNotFoundError from './errors/CollectionNotFoundError';
-import {Inject} from '@tsed/di';
+import {Inject, InjectorService} from '@tsed/di';
 import ApplicationCollectionColumn from '../../../entity/Applications/Collections/ApplicationCollectionColumn';
 import ApplicationCollectionDocumentProperty
     from '../../../entity/Applications/Collections/ApplicationCollectionDocumentProperty';
@@ -11,7 +11,6 @@ import {Constant, Logger} from '@tsed/common';
 import User from '../../../entity/Users/User';
 import ApplicationCollectionDocumentsAccessPermissionsService
     from './Documents/Permissions/ApplicationCollectionDocumentsAccessPermissionsService';
-import UnauthorizedError from '../../Auth/errors/UnauthorizedError';
 import NoConsoleAccessError from '../../Auth/errors/NoConsoleAccessError';
 import AccessToEntityDeniedException from '../../Errors/AccessToEntityDeniedException';
 import ApplicationsService from '../ApplicationsService';
@@ -61,25 +60,29 @@ export default class ApplicationCollectionsService {
     @Constant('collections.listDocuments.maxFilters')
     private readonly listDocumentsMaxFilters: number;
 
+    @Inject(InjectorService)
+    private injector!: InjectorService;
     private readonly orm: DEFAULT_DB_CONNECTION;
     private readonly documentsAccessPermissionsService: ApplicationCollectionDocumentsAccessPermissionsService;
-    private readonly applicationsService: ApplicationsService;
+    private applicationsService: ApplicationsService;
     private readonly clientToApplicationMapping: Record<string, Array<{ socket: Socket, user: User }>>;
-    private readonly usersService: UsersService;
+    private usersService: UsersService;
     private readonly $log: Logger;
 
     public constructor(
         @Inject(DEFAULT_DB_CONNECTION) orm: DEFAULT_DB_CONNECTION,
         documentsAccessPermissionsService: ApplicationCollectionDocumentsAccessPermissionsService,
-        applicationsService: ApplicationsService,
-        usersService: UsersService,
     ) {
         this.orm = orm;
         this.documentsAccessPermissionsService = documentsAccessPermissionsService;
-        this.applicationsService = applicationsService;
-        this.usersService = usersService;
         this.$log = makeLogger('ApplicationCollectionsService');
         this.clientToApplicationMapping = {};
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public $onInit(): void {
+        this.applicationsService = this.injector.get(ApplicationsService) as ApplicationsService;
+        this.usersService = this.injector.get(UsersService) as UsersService;
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -89,6 +92,10 @@ export default class ApplicationCollectionsService {
             socket,
             usersService: this.usersService,
         });
+
+        if (!user) {
+            return;
+        }
 
         let applicationId = '__CONSOLE_ACCESS__';
         if (!user.auth.hasConsoleAccess) {
@@ -250,17 +257,7 @@ export default class ApplicationCollectionsService {
         identifier: CollectionIdentifier,
         injectedRunner?: QueryRunner,
     ): Promise<ApplicationCollection> {
-        if (!authenticatedUser) {
-            throw new UnauthorizedError();
-        }
-
         const manager = injectedRunner ? injectedRunner.manager : this.orm.manager;
-
-        // console users do not have an application assigned to them
-        // so they are allowed to access any application
-        if (!authenticatedUser.auth.hasConsoleAccess && identifier.applicationId !== authenticatedUser.application?.id) {
-            throw new NoConsoleAccessError();
-        }
 
         const collection = await this.getBaseQuery(manager)
             .where('application.id = :applicationId', {applicationId: identifier.applicationId})

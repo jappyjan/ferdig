@@ -2,7 +2,6 @@ import {BodyParams, Controller, Delete, Get, Patch, PathParams, Post, Put, Req} 
 import ApplicationCollectionsController from './Collections/ApplicationCollectionsController';
 import {Returns, Summary} from '@tsed/schema';
 import ApplicationsService from '../../services/Applications/ApplicationsService';
-import User from '../../entity/Users/User';
 import {Authorize} from '@tsed/passport';
 import ApplicationModel from './Models/ApplicationModel';
 import ApplicationsListResponseModel from './Models/ApplicationsListResponseModel';
@@ -17,6 +16,7 @@ import ApplicationConfiguration from '../../entity/Applications/Configuration/Ap
 import ApplicationConfigurationChangeModel from './Models/ApplicationConfigurationChangeModel';
 import {ListResult} from '../../services/shared-types/ListResult';
 import Application from '../../entity/Applications/Application';
+import {getUserFromRequest} from '../../utils/auth';
 
 @Controller({
     path: '/applications',
@@ -42,7 +42,7 @@ export default class ApplicationsController implements CrudController<Applicatio
         @Req() req: Req,
         @BodyParams() payload: ApplicationUpdatePayloadModel,
     ): Promise<Application> {
-        const authenticatedUser = req.user as User | null;
+        const authenticatedUser = getUserFromRequest(req);
 
         return await this.applicationsService.updateApplication(
             authenticatedUser,
@@ -69,7 +69,7 @@ export default class ApplicationsController implements CrudController<Applicatio
         @PathParams('applicationId') applicationId: string,
         @Req() req: Req,
     ): Promise<'success'> {
-        const authenticatedUser = req.user as User ?? null;
+        const authenticatedUser = getUserFromRequest(req);
 
         await this.applicationsService.remove(
             authenticatedUser,
@@ -87,7 +87,8 @@ export default class ApplicationsController implements CrudController<Applicatio
         @BodyParams() data: ApplicationCreatePayloadModel,
         @Req() req: Req,
     ): Promise<Application> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
+
         return await this.applicationsService.createApplication(
             authenticatedUser,
             data,
@@ -102,7 +103,8 @@ export default class ApplicationsController implements CrudController<Applicatio
         @BodyParams() pagination: ApplicationsListPayloadModel,
         @Req() req: Req,
     ): Promise<ListResult<Application>> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
+
         return await this.applicationsService.listApplications(
             authenticatedUser,
             pagination,
@@ -118,7 +120,7 @@ export default class ApplicationsController implements CrudController<Applicatio
         @BodyParams() data: ApplicationConfigurationChangeModel,
         @Req() req: Req,
     ): Promise<ApplicationConfiguration> {
-        const authenticatedUser = req.user as User | null;
+        const authenticatedUser = getUserFromRequest(req);
 
         return await this.applicationsService.changeApplicationConfiguration(
             authenticatedUser,

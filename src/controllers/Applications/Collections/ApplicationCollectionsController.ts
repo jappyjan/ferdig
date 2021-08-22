@@ -13,6 +13,7 @@ import ApplicationCollectionColumnsController from './Columns/ApplicationCollect
 import {CrudController} from '../../CrudController';
 import ApplicationCollection from '../../../entity/Applications/Collections/ApplicationCollection';
 import {ListResult} from '../../../services/shared-types/ListResult';
+import {getUserFromRequest} from '../../../utils/auth';
 
 @Controller({
     path: '/:applicationId/collections',
@@ -37,7 +38,7 @@ export default class ApplicationCollectionsController implements CrudController<
         @PathParams('collectionId') collectionId: string,
         @Req() req: Req,
     ): Promise<'success'> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
 
         await this.collectionsService.removeCollection(
             authenticatedUser,

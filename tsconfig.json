@@ -37,9 +37,14 @@
     "./node_modules/**/*",
     "./public",
     "dist",
-    "test"
+    "test",
+    "db-migrations",
+    "admin-ui"
   ],
   "linterOptions": {
-    "exclude": []
+    "exclude": [
+      "db-migrations",
+      "admin-ui"
+    ]
   }
 }

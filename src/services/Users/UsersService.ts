@@ -247,7 +247,7 @@ export default class UsersService {
     }
 
     public async remove(
-        authenticatedUser: User,
+        authenticatedUser: User | null,
         userId: string,
         injectedRunner?: QueryRunner,
     ): Promise<void> {
@@ -273,11 +273,11 @@ export default class UsersService {
 
     // noinspection JSMethodCanBeStatic
     private async removeWithRunner(
-        authenticatedUser: User,
+        authenticatedUser: User | null,
         userId: string,
         runner: QueryRunner,
     ): Promise<void> {
-        if (!authenticatedUser.auth.hasConsoleAccess) {
+        if (!authenticatedUser?.auth.hasConsoleAccess) {
             throw new NoConsoleAccessError();
         }
 

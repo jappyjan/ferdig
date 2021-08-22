@@ -9,13 +9,13 @@ import ApplicationNotificationTemplate
 import ApplicationNotificationTemplatesListResultModel from './Models/ApplicationNotificationTemplatesListResultModel';
 import ApplicationNotificationTemplatesService
     from '../../../../services/Applications/Notifications/Templates/ApplicationNotificationTemplatesService';
-import User from '../../../../entity/Users/User';
 import ApplicationNotificationTemplatesListPayloadModel
     from './Models/ApplicationNotificationTemplatesListPayloadModel';
 import ApplicationNotificationTemplateUpdatePayloadModel
     from './Models/ApplicationNotificationTemplateUpdatePayloadModel';
 import ApplicationNotificationTemplateCreatePayloadModel
     from './Models/ApplicationNotificationTemplateCreatePayloadModel';
+import {getUserFromRequest} from '../../../../utils/auth';
 
 @Controller({
     path: '/templates',
@@ -36,7 +36,7 @@ export default class ApplicationNotificationTemplatesController implements CrudC
         @BodyParams() data: ApplicationNotificationTemplateCreatePayloadModel,
         @Req() req: Req,
     ): Promise<ApplicationNotificationTemplate> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
 
         return await this.templatesService.create(
             authenticatedUser,
@@ -54,7 +54,7 @@ export default class ApplicationNotificationTemplatesController implements CrudC
         @PathParams('templateId') templateId: string,
         @Req() req: Req,
     ): Promise<ApplicationNotificationTemplate> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
 
         return await this.templatesService.getTemplate(
             authenticatedUser,
@@ -74,7 +74,8 @@ export default class ApplicationNotificationTemplatesController implements CrudC
         @BodyParams() params: ApplicationNotificationTemplatesListPayloadModel,
         @Req() req: Req,
     ): Promise<ListResult<ApplicationNotificationTemplate>> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
+
         return await this.templatesService.list(
             authenticatedUser,
             applicationId,
@@ -91,7 +92,8 @@ export default class ApplicationNotificationTemplatesController implements CrudC
         @PathParams('templateId') templateId: string,
         @Req() req: Req,
     ): Promise<'success'> {
-        const authenticatedUser = req.user as User ?? null;
+        const authenticatedUser = getUserFromRequest(req);
+
         await this.templatesService.remove(
             authenticatedUser,
             {
@@ -113,7 +115,8 @@ export default class ApplicationNotificationTemplatesController implements CrudC
         @BodyParams() data: ApplicationNotificationTemplateUpdatePayloadModel,
         @Req() req: Req,
     ): Promise<ApplicationNotificationTemplate> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
+
         return await this.templatesService.update(
             authenticatedUser,
             {

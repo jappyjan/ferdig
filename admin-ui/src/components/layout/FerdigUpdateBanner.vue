@@ -35,7 +35,7 @@ export default class FerdigUpdateBanner extends Vue {
   }
 
   private async getApiVersion() {
-    this.apiVersion = await getFerdigClient()
+    this.apiVersion = await (await getFerdigClient())
         .getVersion();
   }
 

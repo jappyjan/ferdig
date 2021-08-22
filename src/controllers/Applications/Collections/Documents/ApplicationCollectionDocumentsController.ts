@@ -4,7 +4,6 @@ import {Returns, Summary} from '@tsed/schema';
 import CollectionDocumentsListResponseModel from './Models/CollectionDocumentsListResponseModel';
 import ApplicationCollectionDocumentsService
     from '../../../../services/Applications/Collections/Documents/ApplicationCollectionDocumentsService';
-import User from '../../../../entity/Users/User';
 import {Authorize} from '@tsed/passport';
 import CollectionDocumentsListPayloadModel from './Models/CollectionDocumentsListPayloadModel';
 import {CrudController} from '../../../CrudController';
@@ -16,6 +15,7 @@ import {UploadAnyFileMiddleware} from './UploadAnyFileMiddleware';
 import {createReadStream, promises as FsPromises, ReadStream} from 'fs';
 import {waitForAllPromises} from '../../../../utils/typeorm.utils';
 import {DocumentCreateAndUpdateData} from '../../../../services/Applications/Collections/Documents/DocumentCreateAndUpdateData';
+import {getUserFromRequest} from '../../../../utils/auth';
 
 @Controller('/:collectionId/documents')
 export default class ApplicationCollectionDocumentsController implements CrudController<DocumentAsObjectType> {
@@ -35,7 +35,7 @@ export default class ApplicationCollectionDocumentsController implements CrudCon
         @BodyParams() data: CollectionDocumentCreateModel,
         @Req() req: Req,
     ): Promise<DocumentAsObjectType> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
 
         const createData: DocumentCreateAndUpdateData = {};
 
@@ -92,7 +92,8 @@ export default class ApplicationCollectionDocumentsController implements CrudCon
         @BodyParams() data: CollectionDocumentUpdateModel,
         @Req() req: Req,
     ): Promise<DocumentAsObjectType> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
+
         const updateData: DocumentCreateAndUpdateData = {};
 
         Object.keys(data).forEach((key) => {
@@ -147,7 +148,7 @@ export default class ApplicationCollectionDocumentsController implements CrudCon
         @PathParams('documentId') documentId: string,
         @Req() req: Req,
     ): Promise<DocumentAsObjectType> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
 
         const document = await this.documentsService.getDocument(
             authenticatedUser,
@@ -171,7 +172,7 @@ export default class ApplicationCollectionDocumentsController implements CrudCon
         @PathParams('documentId') documentId: string,
         @Req() req: Req,
     ): Promise<'success'> {
-        const authenticatedUser = req.user as User || null;
+        const authenticatedUser = getUserFromRequest(req);
 
         await this.documentsService.removeDocument(
             authenticatedUser,
@@ -194,7 +195,7 @@ export default class ApplicationCollectionDocumentsController implements CrudCon
         @BodyParams() params: CollectionDocumentsListPayloadModel,
         @Req() req: Req,
     ): Promise<CollectionDocumentsListResponseModel> {
-        const authenticatedUser = req.user as User ?? null;
+        const authenticatedUser = getUserFromRequest(req);
 
         const result = await this.documentsService.listDocuments(
             authenticatedUser,
@@ -227,7 +228,7 @@ export default class ApplicationCollectionDocumentsController implements CrudCon
         @Req() req: Req,
         @Res() res: PlatformExpressResponse,
     ): Promise<void> {
-        const authenticatedUser = req.user as User ?? null;
+        const authenticatedUser = getUserFromRequest(req);
 
         const stream = await this.documentsService.getColumnFile(
             authenticatedUser,

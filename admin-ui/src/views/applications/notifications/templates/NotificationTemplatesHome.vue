@@ -123,7 +123,7 @@ export default class NotificationTemplatesHome extends Vue {
 
     try {
       this.isCreating = true;
-      const template = await getFerdigClient()
+      const template = await (await getFerdigClient())
           .applications
           .notificationTemplates(this.activeApplication.id)
           .create({

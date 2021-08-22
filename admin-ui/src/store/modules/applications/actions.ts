@@ -5,5 +5,9 @@ import {getFerdigClient} from '@/api';
 import {makeCrudActions} from '@/store/module-templates/makeCrudActions';
 
 export const actions: ActionTree<State, RootState> = {
-    ...makeCrudActions<State>(() => Promise.resolve(getFerdigClient().applications)),
+    ...makeCrudActions<State>(() => Promise.resolve(
+        getFerdigClient().then(
+            (client) => client.applications
+        )
+    )),
 }

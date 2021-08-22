@@ -1,4 +1,4 @@
-import {Inject, Service} from '@tsed/di';
+import {Inject, InjectorService, Service} from '@tsed/di';
 import {QueryRunner} from 'typeorm';
 import {Const} from '@tsed/schema';
 import resolvePath from 'object-resolve-path';
@@ -21,15 +21,20 @@ export default class ApplicationCollectionDocumentsAccessPermissionsService {
     @Const('applications.collections.documents.accessRules.cacheDuration')
     private readonly accessRuleCacheDuration: number;
 
+    @Inject(InjectorService)
+    private injector!: InjectorService;
     private readonly orm: DEFAULT_DB_CONNECTION;
-    private readonly usersService: UsersService;
+    private usersService: UsersService;
 
     public constructor(
         @Inject(DEFAULT_DB_CONNECTION) orm: DEFAULT_DB_CONNECTION,
-        usersService: UsersService,
     ) {
         this.orm = orm;
-        this.usersService = usersService;
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    public $onInit(): void {
+        this.usersService = this.injector.get(UsersService) as UsersService;
     }
 
     // noinspection JSMethodCanBeStatic
@@ -128,6 +133,10 @@ export default class ApplicationCollectionDocumentsAccessPermissionsService {
     ): Promise<boolean> {
         if (!rule) {
             return false;
+        }
+
+        if (authenticatedUser?.auth.hasConsoleAccess) {
+            return true;
         }
 
         const hasPermissionForOneOrRule = await this.hasPermissionForOrRules(authenticatedUser, rule, document, injectedRunner);

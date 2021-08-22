@@ -13,6 +13,6 @@ export const actions: ActionTree<State, RootState> = {
             throw new Error('Cannot get NotificationTemplates: no activeApplication');
         }
 
-        return getFerdigClient().applications.notificationTemplates(applicationsState.activeApplication.id);
+        return (await getFerdigClient()).applications.notificationTemplates(applicationsState.activeApplication.id);
     }),
 }

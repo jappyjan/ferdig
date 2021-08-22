@@ -13,6 +13,6 @@ export const actions: ActionTree<State, RootState> = {
             throw new Error('Cannot get Collections: no activeApplication');
         }
 
-        return getFerdigClient().applications.collections(applicationsState.activeApplication.id);
+        return (await getFerdigClient()).applications.collections(applicationsState.activeApplication.id);
     }),
 }

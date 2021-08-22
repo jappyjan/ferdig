@@ -164,7 +164,8 @@ export default class CollectionDocuments extends Vue {
         this.listObserver.complete();
       }
 
-      this.listObserver = await getFerdigClient().applications
+      this.listObserver = await (await getFerdigClient())
+          .applications
           .collections(this.applicationId)
           .documents<GenericDocumentType>(this.collection.id)
           .listAndObserve({

@@ -163,7 +163,7 @@ export default class SingleCollectionColumnEditor extends Vue {
     try {
       this.isSavingConfiguration = true;
 
-      const updatedColumn = await getFerdigClient()
+      const updatedColumn = await (await getFerdigClient())
           .applications
           .collections(this.applicationId)
           .columns(this.collection.id)
