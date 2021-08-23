@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.36.0](https://www.github.com/jappyjan/ferdig/compare/v1.35.0...v1.36.0) (2021-08-23)
+
+
+### Features
+
+* **admin-ui:** copy uuid from breadcrumbs ([4585692](https://www.github.com/jappyjan/ferdig/commit/4585692f8b07c934f267a2a558eb9417bd1ebe1f))
+* **auth:** anonymous access ([510fb09](https://www.github.com/jappyjan/ferdig/commit/510fb095d2147dfa7921606342292bdf24028eb9))
+* removal of mongo/agenda ([851a515](https://www.github.com/jappyjan/ferdig/commit/851a515d5dd722cd0db4a12bb320cfd27213da83))
+
 ## [1.35.0](https://www.github.com/jappyjan/ferdig/compare/v1.34.0...v1.35.0) (2021-08-20)
 
 
