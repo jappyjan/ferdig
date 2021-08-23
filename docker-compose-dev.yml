@@ -3,7 +3,6 @@ version: '3.5'
 volumes:
   postgres:
   pgadmin:
-  mongo:
   minio:
 
 services:
@@ -13,13 +12,6 @@ services:
       service: postgres
     ports:
     - 5432:5432
-
-  mongo:
-    extends:
-      service: mongo
-      file: ./docker-compose.yml
-    ports:
-      - 27017:27017
 
   minio:
     extends:

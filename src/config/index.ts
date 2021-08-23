@@ -3,7 +3,6 @@ import '@tsed/typeorm';
 import '@tsed/swagger';
 import {loggerConfig, passportConfig, socketIoConfig, swaggerConfig, typeormConfig} from './sub-configs';
 import {eventEmitterConfig} from './sub-configs/event-emitter';
-import {agendaConfig} from './sub-configs/agenda';
 import {fileBucketConfig} from './sub-configs/fileBucket';
 import {emailConfig} from './sub-configs/email';
 import {multerConfig} from './sub-configs/multerConfig';
@@ -20,7 +19,6 @@ export const config: Partial<TsED.Configuration> = {
     swagger: swaggerConfig,
     socketIO: socketIoConfig,
     eventEmitter: eventEmitterConfig,
-    agenda: agendaConfig,
     fileBucket: fileBucketConfig,
     email: emailConfig,
     multer: multerConfig,

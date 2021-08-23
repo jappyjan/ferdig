@@ -19,7 +19,6 @@ import setByPath from 'object-path-set';
 import ApplicationAutomationFlowNodeConfigValue
     from '../../../entity/Applications/Automations/ApplicationAutomationFlowNodeConfigValue';
 import ApplicationAutomationFlowNodeLog, {ApplicationAutomationFlowNodeLogLevel} from '../../../entity/Applications/Automations/ApplicationAutomationFlowNodeLog';
-import {Agenda, Every} from '@tsed/agenda';
 import {getEnvVar} from '../../../utils/env';
 import resolvePath from 'object-resolve-path';
 import {runInTransaction, waitForAllPromises} from '../../../utils/typeorm.utils';
@@ -60,7 +59,8 @@ export interface ApplicationAutomationNodeIdentifier extends ApplicationAutomati
 type FlowNodeLogCreateData = Omit<ApplicationAutomationFlowNodeLog, 'id' | 'createdAt' | 'updatedAt'>;
 
 @Service()
-@Agenda({namespace: 'ApplicationAutomations'})
+// replace with alternative like Bree
+// @Agenda({namespace: 'ApplicationAutomations'})
 export default class ApplicationAutomationsService {
     private readonly orm: DEFAULT_DB_CONNECTION;
     private readonly nodeHandlers: Map<string, AutomationNodeHandler>;
@@ -468,9 +468,10 @@ export default class ApplicationAutomationsService {
         await handleNode(node, payload);
     }
 
-    @Every('24 hours', {
-        name: 'FlowNodeLogCleanup',
-    })
+    // replace with alternative like Bree
+    // @Every('24 hours', {
+    //     name: 'FlowNodeLogCleanup',
+    // })
     public async removeOldFlowNodeLogs(): Promise<void> {
         const logRetentionHours = getEnvVar('AUTOMATIONS_LOG_RETENTION_HOURS', 'number');
         const retentionDate = new Date();
