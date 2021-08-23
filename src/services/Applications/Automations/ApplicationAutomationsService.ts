@@ -1,5 +1,5 @@
 import {Inject, InjectorService, Service} from '@tsed/di';
-import {DEFAULT_DB_CONNECTION} from '../../shared-providers/defaultDBConnection';
+import {DEFAULT_DB_CONNECTION} from '../../providers/defaultDBConnection';
 import User from '../../../entity/Users/User';
 import {ListPayload} from './ListPayload';
 import {ListResult} from '../../shared-types/ListResult';

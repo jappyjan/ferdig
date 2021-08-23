@@ -2,7 +2,7 @@ import {Inject, InjectorService, Service} from '@tsed/di';
 import {QueryRunner} from 'typeorm';
 import {Const} from '@tsed/schema';
 import resolvePath from 'object-resolve-path';
-import {DEFAULT_DB_CONNECTION} from '../../../../shared-providers/defaultDBConnection';
+import {DEFAULT_DB_CONNECTION} from '../../../../providers/defaultDBConnection';
 import UsersService from '../../../../Users/UsersService';
 import ApplicationCollectionDocument
     from '../../../../../entity/Applications/Collections/ApplicationCollectionDocument';

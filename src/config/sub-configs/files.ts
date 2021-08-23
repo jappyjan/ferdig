@@ -41,17 +41,17 @@ function getS3Config(): S3Config {
     };
 }
 
-let fileBucketConfig: MinioConfig | S3Config;
+let filesConfig: MinioConfig | S3Config;
 
 const type = getEnvVar('FILE_BUCKET_TYPE', 'string') as FileBucketType;
 
 switch (type) {
     case FileBucketType.Minio:
-        fileBucketConfig = getMinioConfig();
+        filesConfig = getMinioConfig();
         break;
 
     case FileBucketType.S3:
-        fileBucketConfig = getS3Config();
+        filesConfig = getS3Config();
         break;
 
     default:
@@ -59,5 +59,5 @@ switch (type) {
 }
 
 export {
-    fileBucketConfig,
+    filesConfig,
 }

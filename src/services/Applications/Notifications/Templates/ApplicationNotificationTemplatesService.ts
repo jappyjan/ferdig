@@ -2,7 +2,7 @@ import {Inject, InjectorService, OnInit, Service} from '@tsed/di';
 import ApplicationAutomationsService from '../../Automations/ApplicationAutomationsService';
 import ApplicationNotificationTemplate
     from '../../../../entity/Applications/Notifications/Templates/ApplicationNotificationTemplate';
-import {DEFAULT_DB_CONNECTION} from '../../../shared-providers/defaultDBConnection';
+import {DEFAULT_DB_CONNECTION} from '../../../providers/defaultDBConnection';
 import NotificationTemplateNotFoundError from './Errors/NotificationTemplateNotFoundError';
 import AutomationPayloadError from '../../Automations/Errors/AutomationPayloadError';
 import {ApplicationAutomationFlowNodeType} from '../../../../entity/Applications/Automations/ApplicationAutomationFlowNode';

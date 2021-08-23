@@ -1,5 +1,5 @@
 import {Inject, InjectorService, OnInit, Service} from '@tsed/di';
-import {DEFAULT_DB_CONNECTION} from '../shared-providers/defaultDBConnection';
+import {DEFAULT_DB_CONNECTION} from '../providers/defaultDBConnection';
 import Application from '../../entity/Applications/Application';
 import ApplicationNotFoundError from './errors/ApplicationNotFoundError';
 import User from '../../entity/Users/User';

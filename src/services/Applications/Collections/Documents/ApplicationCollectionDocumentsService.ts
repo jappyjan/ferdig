@@ -4,7 +4,6 @@ import {Constant, Logger} from '@tsed/common';
 import ApplicationCollectionsService from '../ApplicationCollectionsService';
 import ApplicationCollectionColumn, {ApplicationCollectionColumnValueType} from '../../../../entity/Applications/Collections/ApplicationCollectionColumn';
 import ApplicationCollectionDocument from '../../../../entity/Applications/Collections/ApplicationCollectionDocument';
-import {DEFAULT_DB_CONNECTION} from '../../../shared-providers/defaultDBConnection';
 import TooManyFiltersError from './errors/TooManyFiltersError';
 import ApplicationCollectionDocumentsAccessPermissionsService
     from './Permissions/ApplicationCollectionDocumentsAccessPermissionsService';
@@ -24,7 +23,6 @@ import {IO, Server, Socket, SocketService} from '@tsed/socketio';
 import UsersService from '../../../Users/UsersService';
 import {documentToObject} from '../../../../entity/Applications/Collections/utils/document-to-object';
 import {OnCommitAction, runInTransaction, waitForAllPromises} from '../../../../utils/typeorm.utils';
-import {DEFAULT_FILE_BUCKET_CONNECTION} from '../../../shared-providers/defaultFileBucket';
 import {CollectionColumnIdentifier} from '../CollectionColumnIdentifier';
 import {DocumentCreateAndUpdateData} from './DocumentCreateAndUpdateData';
 import {DocumentIdentifier} from './DocumentIdentifier';
@@ -33,7 +31,9 @@ import {Readable} from 'stream';
 import UnknownFileError from './errors/UnknownFileError';
 import {handleSocketAuth} from '../../../../utils/sockets';
 import {makeLogger} from '../../../../utils/logger';
-import {BucketFile} from '../../../shared-providers/FileBucket/IFileBucketClient';
+import FilesService from '../../../Files/FilesService';
+import {BucketFile} from '../../../Files/IFileBucketClient';
+import {DEFAULT_DB_CONNECTION} from '../../../providers/defaultDBConnection';
 
 export interface FileUpload {
     originalName: string;
@@ -51,13 +51,13 @@ export default class ApplicationCollectionDocumentsService {
     private readonly permissionsService: ApplicationCollectionDocumentsAccessPermissionsService;
     private readonly collectionsService: ApplicationCollectionsService;
     private readonly clients: Array<{ socket: Socket, user: User | null }>;
-    private readonly fileBucket: DEFAULT_FILE_BUCKET_CONNECTION;
+    private readonly filesService: FilesService;
     private readonly $log: Logger;
 
     public constructor(
         @IO io: Server,
         @Inject(DEFAULT_DB_CONNECTION) orm: DEFAULT_DB_CONNECTION,
-        @Inject(DEFAULT_FILE_BUCKET_CONNECTION) fileBucket: DEFAULT_FILE_BUCKET_CONNECTION,
+        filesService: FilesService,
         usersService: UsersService,
         collectionsAccessPermissionsService: ApplicationCollectionDocumentsAccessPermissionsService,
         collectionsService: ApplicationCollectionsService,
@@ -68,7 +68,7 @@ export default class ApplicationCollectionDocumentsService {
         this.usersService = usersService;
         this.permissionsService = collectionsAccessPermissionsService;
         this.collectionsService = collectionsService;
-        this.fileBucket = fileBucket;
+        this.filesService = filesService;
         this.$log = makeLogger('ApplicationCollectionDocumentsService');
     }
 
@@ -340,7 +340,7 @@ export default class ApplicationCollectionDocumentsService {
         const {applicationId, collectionId, documentId, columnId} = identifier;
         const objectName = `/applications/${applicationId}/collections/${collectionId}/documents/${documentId}/columns/${columnId}/${file.originalName}`;
 
-        await this.fileBucket.upload(objectName, file.data);
+        await this.filesService.upload(objectName, file.data);
 
         return objectName;
     }
@@ -673,7 +673,7 @@ export default class ApplicationCollectionDocumentsService {
     ) {
         if (property.column.valueType === ApplicationCollectionColumnValueType.File) {
             onCommit(async () => {
-                await this.fileBucket.delete(property.value);
+                await this.filesService.delete(property.value);
             });
         }
 
@@ -692,6 +692,6 @@ export default class ApplicationCollectionDocumentsService {
             throw new UnknownFileError(identifier);
         }
 
-        return await this.fileBucket.download(fileProperty.value);
+        return await this.filesService.download(fileProperty.value) as Readable;
     }
 }

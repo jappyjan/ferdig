@@ -1,5 +1,5 @@
 import Multer, {Options} from 'multer';
-import {multerConfig} from '../../../../config/sub-configs/multerConfig';
+import {multerConfig} from '../../../../config/sub-configs/multer';
 import {IMiddleware, Middleware, Next, Req, Res} from '@tsed/common';
 
 const MulterAnyFileMiddleware = (Multer(multerConfig as unknown as Options)).any();

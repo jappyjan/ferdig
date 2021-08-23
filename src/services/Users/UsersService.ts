@@ -1,6 +1,6 @@
 import {Inject, Service} from '@tsed/di';
 import User from '../../entity/Users/User';
-import {DEFAULT_DB_CONNECTION} from '../shared-providers/defaultDBConnection';
+import {DEFAULT_DB_CONNECTION} from '../providers/defaultDBConnection';
 import {hashPassword, verifyPassword} from '../../utils/password';
 import NoConsoleAccessError from '../Auth/errors/NoConsoleAccessError';
 import {ListResult} from '../shared-types/ListResult';

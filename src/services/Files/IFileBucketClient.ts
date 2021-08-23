@@ -1,6 +1,6 @@
 import {Readable} from 'stream';
 
-export type BucketFile = Readable;
+export type BucketFile = string | Readable;
 
 export interface IFileBucketClient {
     init?: () => Promise<void>;

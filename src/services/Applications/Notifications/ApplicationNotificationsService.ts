@@ -1,6 +1,6 @@
 import {Inject, Service} from '@tsed/di';
 import UsersService from '../../Users/UsersService';
-import {DEFAULT_DB_CONNECTION} from '../../shared-providers/defaultDBConnection';
+import {DEFAULT_DB_CONNECTION} from '../../providers/defaultDBConnection';
 import UserNotificationSettings from '../../../entity/Users/UserNotificationSettings';
 import {NotificationPayload} from './NotificationHandler';
 import EmailHandler from './Handler/EmailHandler';

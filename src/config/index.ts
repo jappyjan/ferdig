@@ -3,9 +3,9 @@ import '@tsed/typeorm';
 import '@tsed/swagger';
 import {loggerConfig, passportConfig, socketIoConfig, swaggerConfig, typeormConfig} from './sub-configs';
 import {eventEmitterConfig} from './sub-configs/event-emitter';
-import {fileBucketConfig} from './sub-configs/fileBucket';
+import {filesConfig} from './sub-configs/files';
 import {emailConfig} from './sub-configs/email';
-import {multerConfig} from './sub-configs/multerConfig';
+import {multerConfig} from './sub-configs/multer';
 
 const {version} = require('../../package.json');
 export const rootDir = join(__dirname, '..');
@@ -19,7 +19,7 @@ export const config: Partial<TsED.Configuration> = {
     swagger: swaggerConfig,
     socketIO: socketIoConfig,
     eventEmitter: eventEmitterConfig,
-    fileBucket: fileBucketConfig,
+    fileBucket: filesConfig,
     email: emailConfig,
     multer: multerConfig,
     applications: {

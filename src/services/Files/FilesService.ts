@@ -1,12 +1,17 @@
-import {FileBucketType, MinioConfig, S3Config} from '../../../config/sub-configs/fileBucket';
 import MinioClient from './MinioClient';
 import {BucketFile, IFileBucketClient} from './IFileBucketClient';
 import S3Client from './S3Client';
+import {Configuration, OnInit, ProviderScope, Scope, Service} from '@tsed/di';
+import {filesConfig, FileBucketType, MinioConfig, S3Config} from '../../config/sub-configs/files';
 
-export default class FileBucket implements IFileBucketClient {
+@Service()
+@Scope(ProviderScope.SINGLETON)
+export default class FilesService implements IFileBucketClient, OnInit {
     private readonly client: IFileBucketClient;
 
-    public constructor(options: MinioConfig | S3Config) {
+    public constructor(@Configuration() config: Configuration) {
+        const options = config.fileBucket as typeof filesConfig;
+
         switch (options.type) {
             case FileBucketType.S3:
                 this.client = new S3Client(options as S3Config);
@@ -19,6 +24,16 @@ export default class FileBucket implements IFileBucketClient {
             default:
                 throw new Error('Unknown File Bucket Type');
         }
+    }
+
+    public async $onInit(): Promise<any> {
+        await this.verifyConnection();
+    }
+
+    public async verifyConnection() {
+        const key = 'system/temp/verify-connection';
+        await this.upload(key, 'Hello World');
+        await this.delete(key);
     }
 
     public async init() {
