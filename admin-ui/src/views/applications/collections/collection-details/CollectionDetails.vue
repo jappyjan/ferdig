@@ -156,6 +156,10 @@ export default class CollectionDetails extends Vue {
         to: `/applications/${this.activeApplication?.id}`,
         text: this.activeApplication?.internalName ?? '-',
         exact: true,
+        copy: {
+          value: String(this.activeApplication?.id),
+          label: 'Application ID'
+        }
       },
       {
         to: `/applications/${this.activeApplication?.id}/collections`,
@@ -166,6 +170,10 @@ export default class CollectionDetails extends Vue {
         to: `/applications/${this.activeApplication?.id}/collections/${this.collectionId}`,
         text: this.collection?.internalName ?? '-',
         exact: false,
+        copy: {
+          value: this.collectionId,
+          label: 'Collection ID'
+        }
       },
     ] as Breadcrumb[])
   }

@@ -162,6 +162,10 @@ export default class NotificationTemplateEditor extends Vue {
         to: `/applications/${this.activeApplication?.id}`,
         text: this.activeApplication?.internalName ?? '-',
         exact: true,
+        copy: {
+          value: String(this.activeApplication?.id),
+          label: 'Application ID'
+        }
       },
       {
         to: `/applications/${this.activeApplication?.id}/notification-templates`,
@@ -172,6 +176,10 @@ export default class NotificationTemplateEditor extends Vue {
         to: `/applications/${this.activeApplication?.id}/notification-templates/${this.templateId}`,
         text: this.template.internalName ?? '-',
         exact: false,
+        copy: {
+          value: this.templateId,
+          label: 'Notification-Template ID'
+        }
       },
     ] as Breadcrumb[])
   }

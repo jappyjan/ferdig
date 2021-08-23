@@ -20,8 +20,28 @@
 
       <ferdig-update-banner/>
 
-      <v-breadcrumbs v-if="breadcrumbs.length > 0" :items="breadcrumbs"/>
+      <v-breadcrumbs v-if="breadcrumbs.length > 0" :items="breadcrumbs">
+        <template v-slot:item="{ item }">
+          <v-breadcrumbs-item v-bind="item">
+            <span>{{ item.text }}</span>
+          </v-breadcrumbs-item>
 
+          <v-tooltip v-if="item.copy" bottom>
+            <template v-slot:activator="{on, attrs}">
+              <v-btn @click="copy(item.copy.value)"
+                     icon
+                     v-bind="attrs"
+                     v-on="on"
+                     small
+              >
+                <v-icon small>mdi-content-copy</v-icon>
+              </v-btn>
+            </template>
+
+            <span>Copy {{item.copy.label}}</span>
+          </v-tooltip>
+        </template>
+      </v-breadcrumbs>
       <router-view/>
     </v-main>
   </v-app>
@@ -78,6 +98,13 @@ export default class App extends Vue {
 
     const user = await client.auth.getCurrentUser();
     await this.$store.dispatch('auth/setSession', {user, token: previousToken});
+  }
+
+  // noinspection JSMethodCanBeStatic
+  private async copy(value: string): Promise<void> {
+    await navigator.clipboard.writeText(value);
+
+    await this.$dialog.notify.success('Copied!');
   }
 }
 </script>

@@ -76,6 +76,10 @@ export default class UsersHome extends Vue {
         to: `/applications/${this.activeApplication?.id}`,
         text: this.activeApplication?.internalName ?? '-',
         exact: true,
+        copy: {
+          value: String(this.activeApplication?.id),
+          label: 'Application ID'
+        }
       },
       {
         to: `/applications/${this.activeApplication?.id}/users`,

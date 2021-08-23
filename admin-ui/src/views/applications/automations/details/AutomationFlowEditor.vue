@@ -192,6 +192,10 @@ export default class AutomationFlowEditor extends Vue {
         to: `/applications/${this.activeApplication?.id}`,
         text: this.activeApplication?.internalName ?? '-',
         exact: true,
+        copy: {
+          value: String(this.activeApplication?.id),
+          label: 'Application ID'
+        }
       },
       {
         to: `/applications/${this.activeApplication?.id}/automations`,
@@ -202,6 +206,10 @@ export default class AutomationFlowEditor extends Vue {
         to: `/applications/${this.activeApplication?.id}/automations/${this.automationId}`,
         text: this.automation?.internalName ?? '-',
         exact: true,
+        copy: {
+          value: this.automationId,
+          label: 'Automation ID'
+        }
       },
     ] as Breadcrumb[])
   }
