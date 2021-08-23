@@ -21,7 +21,6 @@ export const actions: ActionTree<State, RootState> = {
         await dispatch('applications/fetchAll', null, {root: true});
     },
     async login({dispatch}, payload: LoginPayload) {
-        console.log('login', payload);
         const session = await (await getFerdigClient())
             .auth
             .startSession({
