@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.37.0](https://www.github.com/jappyjan/ferdig/compare/v1.36.1...v1.37.0) (2021-08-24)
+
+
+### Features
+
+* **files:** extracted FilesService.ts, verify Bucket Service on Init ([8a91c00](https://www.github.com/jappyjan/ferdig/commit/8a91c0043d206ef3fa589f7d28dde09a2214fd74))
+* **mails:** removal of mailcatcher default ([cf03517](https://www.github.com/jappyjan/ferdig/commit/cf03517372a64af7952ce9267534b7f6ba551e35))
+
 ### [1.36.1](https://www.github.com/jappyjan/ferdig/compare/v1.36.0...v1.36.1) (2021-08-23)
 
 
