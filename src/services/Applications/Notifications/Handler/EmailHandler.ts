@@ -30,13 +30,6 @@ export default class EmailHandler implements NotificationHandler {
         let port = config.port;
         let ssl = config.ssl;
 
-        if (this.config.useMailcatcher) {
-            host = 'localhost';
-            port = 1025;
-            auth = undefined;
-            ssl = false;
-        }
-
         const transporter = createTransport({
             host: host,
             port: port,
