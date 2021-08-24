@@ -53,8 +53,6 @@ COPY --from=build-admin-ui /app/dist /ferdig/public
 
 WORKDIR /ferdig
 
-RUN ls -la node_modules/@tsed/logger
-
 EXPOSE 8083
 ENV PORT 8083
 ENV NODE_ENV production
