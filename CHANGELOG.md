@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.37.2](https://www.github.com/jappyjan/ferdig/compare/v1.37.1...v1.37.2) (2021-08-24)
+
+
+### Bug Fixes
+
+* dockerfile ([52f0f15](https://www.github.com/jappyjan/ferdig/commit/52f0f1521ce1c4d2d46be71d7a7a71e46b5a45de))
+
 ### [1.37.1](https://www.github.com/jappyjan/ferdig/compare/v1.37.0...v1.37.1) (2021-08-24)
 
 
