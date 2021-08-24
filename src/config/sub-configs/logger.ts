@@ -8,9 +8,20 @@ export const loggerAppenders = new Map<string, IAppenderConfiguration>();
 if (isProduction) {
     loggerAppenders.set('stdout', {
         type: 'stdout',
+        levels: ['info', 'debug', 'trace', 'fatal', 'error', 'warn'],
+        layout: {
+            type: 'json',
+
+        },
+    });
+
+    /*
+    loggerAppenders.set('stdout', {
+        type: 'stdout',
         levels: ['info', 'debug'],
         layout: {
             type: 'json',
+
         },
     });
 
@@ -20,7 +31,7 @@ if (isProduction) {
         layout: {
             type: 'json',
         },
-    });
+    });*/
 }
 
 loggerAppenders.forEach((appender, name) => {
