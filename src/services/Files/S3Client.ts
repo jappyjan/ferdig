@@ -1,6 +1,6 @@
 import {BucketFile, IFileBucketClient} from './IFileBucketClient';
 import {S3} from 'aws-sdk';
-import {S3Config} from '../../../config/sub-configs/fileBucket';
+import {S3Config} from '../../config/sub-configs/files';
 
 export default class S3Client implements IFileBucketClient {
     private readonly s3: S3;

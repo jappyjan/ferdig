@@ -1,6 +1,6 @@
 import {BucketFile, IFileBucketClient} from './IFileBucketClient';
 import {Client} from 'minio';
-import {MinioConfig} from '../../config/sub-configs/fileBucket';
+import {MinioConfig} from '../../config/sub-configs/files';
 
 export default class MinioClient implements IFileBucketClient {
     private readonly minio: Client;
