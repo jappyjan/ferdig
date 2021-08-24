@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.37.1](https://www.github.com/jappyjan/ferdig/compare/v1.37.0...v1.37.1) (2021-08-24)
+
+
+### Bug Fixes
+
+* imports ([d7524c8](https://www.github.com/jappyjan/ferdig/commit/d7524c88f14f2538279709430a058a1de9f0de66))
+
 ## [1.37.0](https://www.github.com/jappyjan/ferdig/compare/v1.36.1...v1.37.0) (2021-08-24)
 
 
