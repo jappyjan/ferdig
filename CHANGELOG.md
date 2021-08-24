@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.37.3](https://www.github.com/jappyjan/ferdig/compare/v1.37.2...v1.37.3) (2021-08-24)
+
+
+### Bug Fixes
+
+* combined stdout logger ([6972640](https://www.github.com/jappyjan/ferdig/commit/6972640d77b4d34b610d401432936762b53df75b))
+
 ### [1.37.2](https://www.github.com/jappyjan/ferdig/compare/v1.37.1...v1.37.2) (2021-08-24)
 
 
