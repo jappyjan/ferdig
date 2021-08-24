@@ -1604,7 +1604,7 @@
     streamroller "^1.0.3"
     tslib "2.1.0"
 
-"@tsed/logger@^5.16.0":
+"@tsed/logger@^5.16.0", "@tsed/logger@^5.17.0":
   version "5.17.0"
   resolved "https://registry.yarnpkg.com/@tsed/logger/-/logger-5.17.0.tgz#ec99e161112eca39c11f825a95fd892d76071822"
   integrity sha512-co8DdRgtQaisudEQFP2/7y/ji9bnB9QrJYfEr0SEqdHIBJdwuq8joo2vyfOY8ht/w5LOcqo2NVebtwULSsD9Pg==

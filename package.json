@@ -29,6 +29,7 @@
     "@tsed/event-emitter": "^6.59.7",
     "@tsed/exceptions": "^6.59.0",
     "@tsed/json-mapper": "^6.59.0",
+    "@tsed/logger": "^5.17.0",
     "@tsed/passport": "^6.59.0",
     "@tsed/platform-express": "^6.59.0",
     "@tsed/schema": "^6.59.0",

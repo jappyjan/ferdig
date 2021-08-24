@@ -7,10 +7,10 @@ volumes:
 
 services:
   ferdig:
-    #image: jappyjan/ferdig:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ferdig/ferdig:latest
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile
     restart: always
     ports:
       - 80:8083
