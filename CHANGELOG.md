@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.38.2](https://www.github.com/jappyjan/ferdig/compare/v1.38.1...v1.38.2) (2021-08-26)
+
+
+### Bug Fixes
+
+* add db-migrations to dockerfile ([a44276d](https://www.github.com/jappyjan/ferdig/commit/a44276defc7ad9f0ab0c61c8b0c27fd18ced4683))
+
 ### [1.38.1](https://www.github.com/jappyjan/ferdig/compare/v1.38.0...v1.38.1) (2021-08-26)
 
 
