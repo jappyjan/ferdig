@@ -23,6 +23,25 @@ import UserNotificationSettings from '../../entity/Users/UserNotificationSetting
 import {rootDir} from '../index';
 import CronJob from '../../entity/CronJobs/CronJob';
 
+const entities = [
+    Application,
+    ApplicationAutomation,
+    ApplicationAutomationFlowNode,
+    ApplicationAutomationFlowNodeConfigValue,
+    ApplicationAutomationFlowNodeLog,
+    ApplicationCollection,
+    ApplicationCollectionColumn,
+    ApplicationCollectionDocument,
+    ApplicationCollectionDocumentAccessRule,
+    ApplicationCollectionDocumentProperty,
+    ApplicationConfiguration,
+    ApplicationNotificationTemplate,
+    CronJob,
+    User,
+    UserAuth,
+    UserNotificationSettings,
+];
+
 export const typeormConfig: ConnectionOptions[] = [
     {
         name: 'default',
@@ -34,33 +53,16 @@ export const typeormConfig: ConnectionOptions[] = [
         database: getEnvVar('POSTGRES_DATABASE', 'string'),
         synchronize: false,
         logging: getEnvVar('TYPEORM_LOGGING', 'boolean', false),
-        entities: [
-            Application,
-            ApplicationAutomation,
-            ApplicationAutomationFlowNode,
-            ApplicationAutomationFlowNodeConfigValue,
-            ApplicationAutomationFlowNodeLog,
-            ApplicationCollection,
-            ApplicationCollectionColumn,
-            ApplicationCollectionDocument,
-            ApplicationCollectionDocumentAccessRule,
-            ApplicationCollectionDocumentProperty,
-            ApplicationConfiguration,
-            ApplicationNotificationTemplate,
-            CronJob,
-            User,
-            UserAuth,
-            UserNotificationSettings,
-        ],
+        entities,
         migrations: [
-            `db-migrations/**/*.{js,ts}`,
+            `${rootDir}/db-migrations/**/*.{js,ts}`,
         ],
         subscribers: [
             `${rootDir}/subscriber/**/*.{js,ts}`,
         ],
         cli: {
             entitiesDir: `${rootDir}/entity`,
-            migrationsDir: `db-migrations`,
+            migrationsDir: `${rootDir}/db-migrations`,
             subscribersDir: `${rootDir}/subscriber`,
         },
         cache: {

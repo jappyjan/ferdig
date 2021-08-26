@@ -39,12 +39,11 @@
     "./public",
     "dist",
     "test",
-    "db-migrations",
     "admin-ui"
   ],
   "linterOptions": {
     "exclude": [
-      "db-migrations",
+      "src/db-migrations",
       "admin-ui"
     ]
   }
