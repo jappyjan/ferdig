@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.38.0](https://www.github.com/jappyjan/ferdig/compare/v1.37.3...v1.38.0) (2021-08-26)
+
+
+### Features
+
+* cron-jobs and migrations ([b7b70ca](https://www.github.com/jappyjan/ferdig/commit/b7b70ca9830492140fd5c49395b623deac385ca9))
+
 ### [1.37.3](https://www.github.com/jappyjan/ferdig/compare/v1.37.2...v1.37.3) (2021-08-24)
 
 
