@@ -1,4 +1,4 @@
-import {Logger} from '@tsed/common';
+import {Logger} from '@tsed/logger';
 import {auth} from './auth';
 import {Socket} from '@tsed/socketio';
 import User from '../entity/Users/User';

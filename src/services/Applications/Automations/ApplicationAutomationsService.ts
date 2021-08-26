@@ -25,6 +25,7 @@ import {runInTransaction, waitForAllPromises} from '../../../utils/typeorm.utils
 import NoConsoleAccessError from '../../Auth/errors/NoConsoleAccessError';
 import {ApplicationNotificationMedium} from '../Notifications/ApplicationNotificationMedium';
 import Application from '../../../entity/Applications/Application';
+import CronJobsService from '../../CronJobs/CronJobsService';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -59,8 +60,6 @@ export interface ApplicationAutomationNodeIdentifier extends ApplicationAutomati
 type FlowNodeLogCreateData = Omit<ApplicationAutomationFlowNodeLog, 'id' | 'createdAt' | 'updatedAt'>;
 
 @Service()
-// replace with alternative like Bree
-// @Agenda({namespace: 'ApplicationAutomations'})
 export default class ApplicationAutomationsService {
     private readonly orm: DEFAULT_DB_CONNECTION;
     private readonly nodeHandlers: Map<string, AutomationNodeHandler>;
@@ -77,7 +76,7 @@ export default class ApplicationAutomationsService {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    public $onInit(): void {
+    public async $onInit(): Promise<void> {
         this.applicationsService = this.injector.get(ApplicationsService) as ApplicationsService;
 
         this.registerAutomationHandler(
@@ -107,6 +106,21 @@ export default class ApplicationAutomationsService {
                 return payload;
             },
         );
+
+        const cronService = this.injector.get(CronJobsService) as CronJobsService;
+        const logCleanupCronJobId = 'ApplicationAutomationsService::FlowNodeLogCleanup';
+        cronService.registerCronJob(logCleanupCronJobId, () => {
+            return this.removeOldFlowNodeLogs();
+        });
+
+        const twentyFoursHours = 1000 * 60 * 60 * 24;
+        const firstRun = new Date();
+        firstRun.setMilliseconds(firstRun.getMilliseconds() + twentyFoursHours);
+        await cronService.scheduleJob({
+            jobId: logCleanupCronJobId,
+            interval: twentyFoursHours,
+            runAt: firstRun
+        })
     }
 
     // noinspection JSMethodCanBeStatic
@@ -198,8 +212,6 @@ export default class ApplicationAutomationsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(
@@ -344,8 +356,6 @@ export default class ApplicationAutomationsService {
         const logs: FlowNodeLogCreateData[] = [];
 
         const runner = this.orm.createQueryRunner();
-        await runner.connect();
-        await runner.startTransaction();
 
         try {
             return await runInTransaction(
@@ -513,8 +523,6 @@ export default class ApplicationAutomationsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(
@@ -571,8 +579,6 @@ export default class ApplicationAutomationsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction('READ UNCOMMITTED');
         }
 
         return await runInTransaction(

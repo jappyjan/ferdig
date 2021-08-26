@@ -21,6 +21,7 @@ import ApplicationNotificationTemplate
 import UserAuth from '../../entity/Users/UserAuth';
 import UserNotificationSettings from '../../entity/Users/UserNotificationSettings';
 import {rootDir} from '../index';
+import CronJob from '../../entity/CronJobs/CronJob';
 
 export const typeormConfig: ConnectionOptions[] = [
     {
@@ -31,7 +32,7 @@ export const typeormConfig: ConnectionOptions[] = [
         username: getEnvVar('POSTGRES_USERNAME', 'string'),
         password: getEnvVar('POSTGRES_PASSWORD', 'string'),
         database: getEnvVar('POSTGRES_DATABASE', 'string'),
-        synchronize: getEnvVar('TYPEORM_SYNCHRONIZE', 'boolean', false),
+        synchronize: false,
         logging: getEnvVar('TYPEORM_LOGGING', 'boolean', false),
         entities: [
             Application,
@@ -46,12 +47,13 @@ export const typeormConfig: ConnectionOptions[] = [
             ApplicationCollectionDocumentProperty,
             ApplicationConfiguration,
             ApplicationNotificationTemplate,
+            CronJob,
             User,
             UserAuth,
             UserNotificationSettings,
         ],
         migrations: [
-            // `db-migrations/**/*.{js,ts}`,
+            `db-migrations/**/*.{js,ts}`,
         ],
         subscribers: [
             `${rootDir}/subscriber/**/*.{js,ts}`,

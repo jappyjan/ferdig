@@ -10,4 +10,8 @@ export interface IFileBucketClient {
     delete(key: string): Promise<void>;
 
     download(key: string): Promise<BucketFile>;
+
+    createBucket(name: string): Promise<void>;
+
+    bucketExists(name: string): Promise<boolean>;
 }

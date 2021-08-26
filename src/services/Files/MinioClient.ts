@@ -18,6 +18,14 @@ export default class MinioClient implements IFileBucketClient {
         });
     }
 
+    public bucketExists(name: string): Promise<boolean> {
+        return this.minio.bucketExists(name);
+    }
+
+    public async createBucket(name: string): Promise<void> {
+        await this.minio.makeBucket(name, this.options.region);
+    }
+
     public async upload(key: string, file: BucketFile) {
         await this.minio.putObject(this.options.bucket, key, file)
     }

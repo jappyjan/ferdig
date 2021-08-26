@@ -72,8 +72,6 @@ export default class ApplicationsService implements OnInit {
         data: CreatePayload,
     ): Promise<Application> {
         const runner = this.orm.createQueryRunner();
-        await runner.connect();
-        await runner.startTransaction('READ UNCOMMITTED');
 
         return await runInTransaction(
             'ApplicationsService::createApplication',
@@ -244,8 +242,6 @@ export default class ApplicationsService implements OnInit {
         applicationId: string,
     ): Promise<void> {
         const runner = this.orm.createQueryRunner();
-        await runner.connect();
-        await runner.startTransaction();
 
         return await runInTransaction(
             'ApplicationsService::remove',

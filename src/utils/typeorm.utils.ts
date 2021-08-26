@@ -18,6 +18,10 @@ export async function runInTransaction<T>(
     {runner, isInjectedRunner}: Options,
     cb: (args: CallbackArguments) => Promise<T>,
 ): Promise<T> {
+    if (!isInjectedRunner && !runner.isTransactionActive) {
+        await runner.startTransaction('READ UNCOMMITTED');
+    }
+
     const timeout = setTimeout(async () => {
         await runner.rollbackTransaction();
         await runner.release();

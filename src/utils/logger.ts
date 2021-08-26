@@ -1,4 +1,4 @@
-import {Logger} from '@tsed/common';
+import {Logger} from '@tsed/logger';
 import {loggerAppenders} from '../config/sub-configs';
 
 export function makeLogger(name: string): Logger {

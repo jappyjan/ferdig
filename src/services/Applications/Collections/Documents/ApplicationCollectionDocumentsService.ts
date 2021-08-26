@@ -1,6 +1,7 @@
 import {Inject} from '@tsed/di';
 import {Brackets, EntityManager, QueryRunner, WhereExpression} from 'typeorm';
-import {Constant, Logger} from '@tsed/common';
+import {Constant} from '@tsed/common';
+import {Logger} from '@tsed/logger';
 import ApplicationCollectionsService from '../ApplicationCollectionsService';
 import ApplicationCollectionColumn, {ApplicationCollectionColumnValueType} from '../../../../entity/Applications/Collections/ApplicationCollectionColumn';
 import ApplicationCollectionDocument from '../../../../entity/Applications/Collections/ApplicationCollectionDocument';
@@ -381,8 +382,6 @@ export default class ApplicationCollectionDocumentsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(
@@ -505,8 +504,6 @@ export default class ApplicationCollectionDocumentsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(
@@ -621,8 +618,6 @@ export default class ApplicationCollectionDocumentsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(

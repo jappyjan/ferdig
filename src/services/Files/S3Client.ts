@@ -12,6 +12,24 @@ export default class S3Client implements IFileBucketClient {
         this.s3 = new S3();
     }
 
+    public async bucketExists(name: string) {
+        try {
+            await this.s3.headBucket({
+                Bucket: name,
+            }).promise();
+            return true;
+        } catch (e) {
+            return e.statusCode === 200;
+        }
+    }
+
+    public async createBucket(name: string): Promise<void> {
+        await this.s3.createBucket({
+            Bucket: name,
+            ACL: 'private',
+        });
+    }
+
     public async upload(key: string, file: BucketFile) {
         await this.s3.upload({
             Bucket: this.options.bucket,

@@ -237,8 +237,6 @@ export default class ApplicationCollectionDocumentsAccessPermissionsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(
@@ -279,8 +277,6 @@ export default class ApplicationCollectionDocumentsAccessPermissionsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(

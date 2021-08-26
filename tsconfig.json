@@ -26,12 +26,13 @@
       "ESNext.AsyncIterable"
     ],
     "typeRoots": [
-      "./node_modules/@types",
+      "./node_modules/@types"
     ],
     "skipLibCheck": true
   },
   "include": [
-    "./src/**/*.ts"
+    "./src/**/*.ts",
+    "node_modules/handlebars/types/index.d.ts"
   ],
   "exclude": [
     "./node_modules/**/*",

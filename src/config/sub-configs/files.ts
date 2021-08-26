@@ -41,17 +41,25 @@ function getS3Config(): S3Config {
     };
 }
 
-let filesConfig: MinioConfig | S3Config;
+let filesConfig: (MinioConfig | S3Config) & { createBucketIfNotExist: boolean };
 
 const type = getEnvVar('FILE_BUCKET_TYPE', 'string') as FileBucketType;
 
+const createBucketIfNotExist = getEnvVar('FILE_BUCKET_CREATE_BUCKET_IF_NOT_EXIST', 'boolean', false);
+
 switch (type) {
     case FileBucketType.Minio:
-        filesConfig = getMinioConfig();
+        filesConfig = {
+            ...getMinioConfig(),
+            createBucketIfNotExist,
+        };
         break;
 
     case FileBucketType.S3:
-        filesConfig = getS3Config();
+        filesConfig = {
+            ...getS3Config(),
+            createBucketIfNotExist,
+        };
         break;
 
     default:

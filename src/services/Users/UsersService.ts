@@ -108,8 +108,6 @@ export default class UsersService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(
@@ -254,8 +252,6 @@ export default class UsersService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(

@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="start all" type="CompoundRunConfigurationType">
-    <toRun name="serve:admin-ui" type="js.build_tools.npm" />
-    <toRun name="start:server" type="js.build_tools.npm" />
-    <method v="2" />
-  </configuration>
-</component>

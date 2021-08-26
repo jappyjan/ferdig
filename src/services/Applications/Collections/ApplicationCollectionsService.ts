@@ -7,7 +7,8 @@ import ApplicationCollectionColumn from '../../../entity/Applications/Collection
 import ApplicationCollectionDocumentProperty
     from '../../../entity/Applications/Collections/ApplicationCollectionDocumentProperty';
 import {EntityManager, QueryRunner} from 'typeorm';
-import {Constant, Logger} from '@tsed/common';
+import {Constant} from '@tsed/common';
+import {Logger} from '@tsed/logger';
 import User from '../../../entity/Users/User';
 import ApplicationCollectionDocumentsAccessPermissionsService
     from './Documents/Permissions/ApplicationCollectionDocumentsAccessPermissionsService';
@@ -198,8 +199,6 @@ export default class ApplicationCollectionsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(
@@ -292,8 +291,6 @@ export default class ApplicationCollectionsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(
@@ -358,8 +355,6 @@ export default class ApplicationCollectionsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(
@@ -437,8 +432,6 @@ export default class ApplicationCollectionsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(
@@ -510,8 +503,6 @@ export default class ApplicationCollectionsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(
@@ -637,8 +628,6 @@ export default class ApplicationCollectionsService {
         let runner = injectedRunner;
         if (!runner) {
             runner = this.orm.createQueryRunner();
-            await runner.connect();
-            await runner.startTransaction();
         }
 
         return await runInTransaction(
