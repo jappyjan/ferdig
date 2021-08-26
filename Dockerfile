@@ -14,6 +14,7 @@ COPY ./src ./src
 COPY ./tsconfig.json .
 COPY ./tsconfig.compile.json .
 COPY ./.babelrc .
+COPY ./db-migrations ./db-migrations
 
 RUN yarn build
 
@@ -49,6 +50,7 @@ FROM node:15-alpine as final-image
 COPY --from=build-ferdig /app/dist /ferdig/dist
 COPY --from=build-ferdig /app/node_modules /ferdig/node_modules
 COPY --from=build-ferdig /app/package.json /ferdig/package.json
+COPY --from=build-ferdig /app/db-migrations /ferdig/db-migrations
 COPY --from=build-admin-ui /app/dist /ferdig/public
 
 WORKDIR /ferdig
