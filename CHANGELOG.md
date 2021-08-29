@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.38.8](https://www.github.com/jappyjan/ferdig/compare/v1.38.7...v1.38.8) (2021-08-29)
+
+
+### Bug Fixes
+
+* admin-ui env ([3c86d44](https://www.github.com/jappyjan/ferdig/commit/3c86d446f06fcd46b730618fb84cfdb5e8096637))
+
 ### [1.38.7](https://www.github.com/jappyjan/ferdig/compare/v1.38.6...v1.38.7) (2021-08-29)
 
 
