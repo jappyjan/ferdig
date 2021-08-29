@@ -3,7 +3,7 @@ import {RootState} from '@/store/RootState';
 import {State} from './State';
 import {getFerdigClient} from '@/api';
 import {FerdigUser} from '@ferdig/client-js';
-import {getEnvVar} from '@/utils/env';
+import {localStorageKey} from '@/store/LocalStorageKey';
 
 interface LoginPayload {
     email: string;
@@ -13,8 +13,7 @@ interface LoginPayload {
 export const actions: ActionTree<State, RootState> = {
     async setSession({commit, dispatch}, {user, token}) {
         (await getFerdigClient()).setToken(token);
-        const tokenLocalStorageKey = getEnvVar('VUE_APP_FERDIG_TOKEN_LOCAL_STORAGE_KEY', 'string');
-        localStorage.setItem(tokenLocalStorageKey, token);
+        localStorage.setItem(localStorageKey, token);
         commit('setUser', user);
         commit('setToken', token);
 

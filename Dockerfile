@@ -34,7 +34,6 @@ RUN yarn install --frozen-lockfile
 COPY admin-ui/src ./src
 COPY admin-ui/public ./public
 COPY admin-ui/.browserslistrc ./.browserslistrc
-COPY admin-ui/.env ./.env
 COPY admin-ui/.eslintignore ./.eslintignore
 COPY admin-ui/.eslintrc.js ./.eslintrc.js
 COPY admin-ui/babel.config.js ./babel.config.js

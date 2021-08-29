@@ -60,6 +60,7 @@ import AppNavigationDrawer from '@/components/layout/AppNavigationDrawer.vue';
 import {State} from 'vuex-class';
 import {Breadcrumb} from '@/store/RootState';
 import FerdigUpdateBanner from '@/components/layout/FerdigUpdateBanner.vue';
+import {localStorageKey} from '@/store/LocalStorageKey';
 
 @Component({
   components: {
@@ -86,8 +87,7 @@ export default class App extends Vue {
   }
 
   private async initFerdig() {
-    const tokenLocalStorageKey = getEnvVar('VUE_APP_FERDIG_TOKEN_LOCAL_STORAGE_KEY', 'string');
-    const previousToken = localStorage.getItem(tokenLocalStorageKey);
+    const previousToken = localStorage.getItem(localStorageKey);
 
     if (!previousToken) {
       return;
