@@ -42,6 +42,7 @@ const entities = [
     UserNotificationSettings,
 ];
 
+
 export const typeormConfig: ConnectionOptions[] = [
     {
         name: 'default',
