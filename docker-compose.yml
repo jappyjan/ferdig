@@ -7,7 +7,7 @@ volumes:
 
 services:
   ferdig:
-    image: jappyjan/ferdig:latest
+    image: jappyjan/ferdig:1.38.6
     #build:
     #  context: .
     #  dockerfile: Dockerfile

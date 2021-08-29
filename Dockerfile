@@ -49,7 +49,7 @@ FROM node:15-alpine as final-image
 COPY --from=build-ferdig /app/dist /ferdig/dist
 COPY --from=build-ferdig /app/node_modules /ferdig/node_modules
 COPY --from=build-ferdig /app/package.json /ferdig/package.json
-COPY --from=build-admin-ui /app/dist /ferdig/public
+COPY --from=build-admin-ui /app/dist /ferdig/public/admin-ui/
 
 WORKDIR /ferdig
 
