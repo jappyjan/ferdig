@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.38.7](https://www.github.com/jappyjan/ferdig/compare/v1.38.6...v1.38.7) (2021-08-29)
+
+
+### Bug Fixes
+
+* Dockerfile copy admin-ui to wrong folder ([a4d2ee9](https://www.github.com/jappyjan/ferdig/commit/a4d2ee94528563e3cbd889b63ee77f511b991109))
+
 ### [1.38.6](https://www.github.com/jappyjan/ferdig/compare/v1.38.5...v1.38.6) (2021-08-29)
 
 
