@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.38.5](https://www.github.com/jappyjan/ferdig/compare/v1.38.4...v1.38.5) (2021-08-29)
+
+
+### Bug Fixes
+
+* version extraction ([3f55e3f](https://www.github.com/jappyjan/ferdig/commit/3f55e3f977b66333127ed43765ba9e59401a667a))
+
 ### [1.38.4](https://www.github.com/jappyjan/ferdig/compare/v1.38.3...v1.38.4) (2021-08-29)
 
 
