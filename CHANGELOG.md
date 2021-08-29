@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.38.4](https://www.github.com/jappyjan/ferdig/compare/v1.38.3...v1.38.4) (2021-08-29)
+
+
+### Miscellaneous
+
+* change to be able to deploy ([c59305e](https://www.github.com/jappyjan/ferdig/commit/c59305ef028b61da3c5f41749935086992aa23fb))
+
 ### [1.38.3](https://www.github.com/jappyjan/ferdig/compare/v1.38.2...v1.38.3) (2021-08-29)
 
 
