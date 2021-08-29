@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.38.3](https://www.github.com/jappyjan/ferdig/compare/v1.38.2...v1.38.3) (2021-08-29)
+
+
+### Bug Fixes
+
+* recursive dependency on rootDir ([956b807](https://www.github.com/jappyjan/ferdig/commit/956b807353d274a6fea970b05dbcbf9278205d2c))
+
 ### [1.38.2](https://www.github.com/jappyjan/ferdig/compare/v1.38.1...v1.38.2) (2021-08-26)
 
 
