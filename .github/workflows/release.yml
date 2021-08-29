@@ -45,6 +45,7 @@ jobs:
     if: ${{needs.release-please.outputs.released}}
     runs-on: ubuntu-latest
     steps:
+      - uses: win-t/gh-action-docker-state@v1
       - name: start deployment
         uses: bobheadxi/deployments@v0.4.3
         id: deployment

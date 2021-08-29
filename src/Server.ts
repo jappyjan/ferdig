@@ -8,9 +8,10 @@ import methodOverride from 'method-override';
 import cors from 'cors';
 import '@tsed/ajv';
 import '@tsed/async-hook-context';
-import {config, rootDir} from './config';
+import {config} from './config';
 import {join} from 'path';
 import {DEFAULT_DB_CONNECTION} from './services/providers/defaultDBConnection';
+import {rootDir} from './config/rootDir';
 
 const uiPath = `${rootDir}/../public/admin-ui`;
 

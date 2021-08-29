@@ -20,8 +20,8 @@ import ApplicationNotificationTemplate
     from '../../entity/Applications/Notifications/Templates/ApplicationNotificationTemplate';
 import UserAuth from '../../entity/Users/UserAuth';
 import UserNotificationSettings from '../../entity/Users/UserNotificationSettings';
-import {rootDir} from '../index';
 import CronJob from '../../entity/CronJobs/CronJob';
+import {rootDir} from '../rootDir';
 
 const entities = [
     Application,
@@ -55,7 +55,7 @@ export const typeormConfig: ConnectionOptions[] = [
         logging: getEnvVar('TYPEORM_LOGGING', 'boolean', false),
         entities,
         migrations: [
-            `${rootDir}/db-migrations/**/*.{js,ts}`,
+            `${rootDir}/db-migrations/*.{js,ts}`,
         ],
         subscribers: [
             `${rootDir}/subscriber/**/*.{js,ts}`,
