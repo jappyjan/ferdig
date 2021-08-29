@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.38.6](https://www.github.com/jappyjan/ferdig/compare/v1.38.5...v1.38.6) (2021-08-29)
+
+
+### Bug Fixes
+
+* gh action breaking docker ([bc8fe4d](https://www.github.com/jappyjan/ferdig/commit/bc8fe4d5a6e2002415aeae6ca31739ba9773d227))
+
 ### [1.38.5](https://www.github.com/jappyjan/ferdig/compare/v1.38.4...v1.38.5) (2021-08-29)
 
 
