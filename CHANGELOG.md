@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.39.0](https://www.github.com/jappyjan/ferdig/compare/v1.38.8...v1.39.0) (2021-08-30)
+
+
+### Features
+
+* **mail:** aws ses as email provider ([73cb163](https://www.github.com/jappyjan/ferdig/commit/73cb163206a7934dc24ebaa474f9b08b4d6b61ad))
+
 ### [1.38.8](https://www.github.com/jappyjan/ferdig/compare/v1.38.7...v1.38.8) (2021-08-29)
 
 
