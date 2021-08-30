@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.39.1](https://www.github.com/jappyjan/ferdig/compare/v1.39.0...v1.39.1) (2021-08-30)
+
+
+### Bug Fixes
+
+* missing property on ApplicationConfigurationEmailModel.ts ([accf828](https://www.github.com/jappyjan/ferdig/commit/accf8282ea62e4dde490edfa43f5afa23e5a7e47))
+
 ## [1.39.0](https://www.github.com/jappyjan/ferdig/compare/v1.38.8...v1.39.0) (2021-08-30)
 
 
