@@ -120,7 +120,7 @@ export default class ApplicationAutomationsService {
             jobId: logCleanupCronJobId,
             interval: twentyFoursHours,
             runAt: firstRun
-        })
+        }, true)
     }
 
     // noinspection JSMethodCanBeStatic

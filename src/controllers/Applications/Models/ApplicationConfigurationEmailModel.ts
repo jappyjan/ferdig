@@ -1,8 +1,13 @@
 import ApplicationConfigurationEmail
     from '../../../entity/Applications/Configuration/E-Mail/ApplicationConfigurationEmail';
-import {AnyOf, Integer, JsonFormatTypes, Required} from '@tsed/schema';
+import {AnyOf, Enum, Integer, JsonFormatTypes, Nullable, Required} from '@tsed/schema';
+import {EmailClientType} from '../../../services/Applications/Notifications/Handler/Email/EmailClient';
 
 export default class ApplicationConfigurationEmailModel implements ApplicationConfigurationEmail {
+    @Required()
+    @Enum(EmailClientType)
+    clientType: EmailClientType;
+
     @Required()
     @AnyOf(JsonFormatTypes.HOSTNAME, JsonFormatTypes.IPV4, JsonFormatTypes.IPV6)
     host: string;
@@ -25,4 +30,11 @@ export default class ApplicationConfigurationEmailModel implements ApplicationCo
 
     @Required()
     fromAddress: string;
+
+    @Required()
+    replyToAddress: string;
+
+    @Required()
+    @Nullable(String)
+    replyToName: string | null;
 }

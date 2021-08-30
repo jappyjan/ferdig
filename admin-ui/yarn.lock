@@ -903,10 +903,10 @@
     "@babel/helper-validator-identifier" "^7.14.5"
     to-fast-properties "^2.0.0"
 
-"@ferdig/client-js@^1.22.0":
-  version "1.22.0"
-  resolved "https://registry.yarnpkg.com/@ferdig/client-js/-/client-js-1.22.0.tgz#acf42b7180a52b6fca60c6bf9a7d21be8fb2f83a"
-  integrity sha512-Ob/CERChHk6oaTVsHqANQtSE5nnTOsEhdLwPd0SXlUlDMchXGnzSklFrggEmeF0GCqu+3wW1BifXOMELjy4roQ==
+"@ferdig/client-js@^1.25.2":
+  version "1.25.2"
+  resolved "https://registry.yarnpkg.com/@ferdig/client-js/-/client-js-1.25.2.tgz#4c0287070cec626f5fca01efc0c5826341780540"
+  integrity sha512-l1GOZcv2SciVaYQCDX+2ywmDy087wQb1X5lgVbUs2UeJ4lK7dEcrvWdeSt/an8seM4cR9pL6IgnBQv3DqdR6iA==
   dependencies:
     axios "^0.21.1"
     rxjs "^7.2.0"

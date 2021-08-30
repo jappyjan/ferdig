@@ -1,6 +1,7 @@
-import {Required} from '@tsed/schema';
+import {OneOf, Enum, Required} from '@tsed/schema';
+import {EmailClientType} from '../../../services/Applications/Notifications/Handler/Email/EmailClient';
 
-export default class ApplicationConfigurationEmailCreatePayloadModel {
+class ApplicationConfigurationEmailSMTPClientConfig {
     @Required()
     host: string;
 
@@ -21,4 +22,31 @@ export default class ApplicationConfigurationEmailCreatePayloadModel {
 
     @Required()
     fromAddress: string;
+
+    @Required()
+    replyToName: string;
+
+    @Required()
+    replyToAddress: string;
+}
+
+class ApplicationConfigurationEmailAWSSESClientConfig {
+    @Required()
+    fromAddress: string;
+
+    @Required()
+    replyToAddress: string;
+
+    @Required()
+    region: string;
+}
+
+export default class ApplicationConfigurationEmailCreatePayloadModel {
+    @Required()
+    @Enum(EmailClientType)
+    clientType: EmailClientType;
+
+    @Required()
+    @OneOf(ApplicationConfigurationEmailSMTPClientConfig, ApplicationConfigurationEmailAWSSESClientConfig)
+    clientConfig: ApplicationConfigurationEmailSMTPClientConfig | ApplicationConfigurationEmailAWSSESClientConfig
 }

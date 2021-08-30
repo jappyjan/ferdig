@@ -42,7 +42,6 @@ const entities = [
     UserNotificationSettings,
 ];
 
-
 export const typeormConfig: ConnectionOptions[] = [
     {
         name: 'default',
@@ -62,9 +61,9 @@ export const typeormConfig: ConnectionOptions[] = [
             `${rootDir}/subscriber/**/*.{js,ts}`,
         ],
         cli: {
-            entitiesDir: `${rootDir}/entity`,
-            migrationsDir: `${rootDir}/db-migrations`,
-            subscribersDir: `${rootDir}/subscriber`,
+            entitiesDir: `src/entity`,
+            migrationsDir: `src/db-migrations`,
+            subscribersDir: `src/subscriber`,
         },
         cache: {
             duration: 2000,

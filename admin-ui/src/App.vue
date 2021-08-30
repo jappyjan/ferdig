@@ -52,7 +52,6 @@ import Vue from 'vue';
 import Component from 'vue-class-component';
 import AppBar from '@/components/layout/AppBar.vue';
 import AuthDialog from '@/components/auth/AuthDialog.vue';
-import {getEnvVar} from '@/utils/env';
 import {getFerdigClient} from '@/api';
 import SplashScreen from '@/components/layout/SplashScreen.vue';
 import AnimatedLogo from '@/components/Logo/AnimatedLogo.vue';

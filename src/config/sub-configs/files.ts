@@ -63,7 +63,7 @@ switch (type) {
         break;
 
     default:
-        throw new Error(`Environment Variable "FILE_BUCKET_TYPE" not in range (${Object.keys(FileBucketType).join(' | ')})`);
+        throw new Error(`Environment Variable "FILE_BUCKET_TYPE" (${type}) not in range (${Object.keys(FileBucketType).join(' | ')})`);
 }
 
 export {

@@ -4,7 +4,7 @@ import {runInTransaction, waitForAllPromises} from '../../utils/typeorm.utils';
 import {Brackets, QueryRunner} from 'typeorm';
 import CronJob from '../../entity/CronJobs/CronJob';
 import {makeLogger} from '../../utils/logger';
-import { Logger } from '@tsed/logger';
+import {Logger} from '@tsed/logger';
 
 type JobId = string;
 type JobExecutor = (job: CronJob) => Promise<unknown>;
@@ -25,7 +25,7 @@ export default class CronJobsService implements OnInit {
     private jobExecutors: JobExecutorList = {};
     private readonly $log: Logger;
 
-    public constructor(@Inject(DEFAULT_DB_CONNECTION) orm: DEFAULT_DB_CONNECTION,) {
+    public constructor(@Inject(DEFAULT_DB_CONNECTION) orm: DEFAULT_DB_CONNECTION) {
         this.orm = orm;
         this.$log = makeLogger('Cron-Jobs');
     }
@@ -43,15 +43,39 @@ export default class CronJobsService implements OnInit {
         this.jobExecutors[jobId]!.push(executor);
     }
 
-    public async scheduleJob(options: JobOptions) {
+    public async scheduleJob(options: JobOptions, skipIfExists = false) {
         this.$log.info('Scheduling Job:', JSON.stringify(options));
 
-        return await this.orm.manager.getRepository(CronJob).save({
-            jobId: options.jobId,
+        const existing = await this.orm.manager.getRepository(CronJob)
+            .findOne({
+                jobId: options.jobId,
+            });
+
+        if (existing && skipIfExists) {
+            return;
+        }
+
+        if (!existing) {
+            return await this.orm.manager.getRepository(CronJob).save({
+                jobId: options.jobId,
+                interval: options.interval,
+                nextRun: options.runAt,
+                payload: options.payload,
+            });
+        }
+
+        const updateData = {
             interval: options.interval,
             nextRun: options.runAt,
             payload: options.payload,
-        })
+        }
+        await this.orm.manager.getRepository(CronJob).update(
+            existing.id,
+            updateData,
+        );
+
+        Object.assign(existing, updateData);
+        return existing;
     }
 
     private async executeJobQueue() {
@@ -69,7 +93,7 @@ export default class CronJobsService implements OnInit {
             return;
         }
 
-        await waitForAllPromises(jobs.map(this.executeJob));
+        await waitForAllPromises(jobs.map(this.executeJob.bind(this)));
     }
 
     // noinspection JSMethodCanBeStatic

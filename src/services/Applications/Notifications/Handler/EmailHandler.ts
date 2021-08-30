@@ -1,87 +1,70 @@
 import {NotificationHandler, NotificationPayload} from '../NotificationHandler';
 import User from '../../../../entity/Users/User';
-import {Configuration, Service} from '@tsed/di';
-import {createTransport, Transporter} from 'nodemailer';
-import ApplicationConfigurationEmail
-    from '../../../../entity/Applications/Configuration/E-Mail/ApplicationConfigurationEmail';
+import {Service} from '@tsed/di';
 import Application from '../../../../entity/Applications/Application';
-import {$log} from '@tsed/common';
-import {LoggerLevel} from 'nodemailer/lib/shared';
-import {emailConfig} from '../../../../config/sub-configs/email';
+import {EmailClient, EmailClientType} from './Email/EmailClient';
+import NodemailerClient from './Email/NodemailerClient';
+
+export interface AWSSESClientConfiguration {
+    fromAddress: string;
+    replyToAddress: string;
+    region: string;
+}
+
+export interface SMTPClientConfiguration {
+    host: string;
+    port: number;
+    ssl: boolean;
+    authUser: string;
+    authPassword: string;
+    fromName: string;
+    fromAddress: string;
+    replyToName: string;
+    replyToAddress: string;
+}
+
+export type EmailClientConfigurations = {
+    [EmailClientType.AWS_SES]: AWSSESClientConfiguration,
+    [EmailClientType.SMTP]: SMTPClientConfiguration,
+}
+
+export interface EmailClientOptions<type extends EmailClientType> {
+    clientType: type;
+    config: EmailClientConfigurations[type];
+}
 
 @Service()
 export default class EmailHandler implements NotificationHandler {
-    private readonly config: typeof emailConfig;
+    // noinspection JSMethodCanBeStatic
+    private getClient(type: EmailClientType): EmailClient {
+        let client: EmailClient;
 
-    public constructor(@Configuration() config: Configuration) {
-        this.config = config.email;
-    }
+        switch (type) {
+            case EmailClientType.SMTP:
+            case EmailClientType.AWS_SES:
+                client = new NodemailerClient();
+                break;
 
-    public async verifyConfigurationAndCreateTransport(config: ApplicationConfigurationEmail): Promise<Transporter> {
-        let auth: undefined | { user: string, pass: string } = undefined;
-        if (config.authUser && config.authPassword) {
-            auth = {
-                user: config.authUser,
-                pass: config.authPassword,
-            };
+            default:
+                throw new Error('Unknown Email ClientType');
         }
 
-        let host = config.host;
-        let port = config.port;
-        let ssl = config.ssl;
+        return client;
+    }
 
-        const transporter = createTransport({
-            host: host,
-            port: port,
-            secure: ssl,
-            auth,
-            from: {
-                name: config.fromName,
-                address: config.fromAddress,
-            },
-            logger: {
-                info(...params: unknown[]) {
-                    $log.info(...params);
-                },
-                warn(...params: unknown[]) {
-                    $log.warn(...params);
-                },
-                error(...params: unknown[]) {
-                    $log.error(...params);
-                },
-                debug(...params: unknown[]) {
-                    $log.debug(...params);
-                },
-                trace(...params: unknown[]) {
-                    $log.trace(...params);
-                },
-                fatal(...params: unknown[]) {
-                    $log.fatal(...params);
-                },
-                level(level: LoggerLevel) {
-                    $log.level = level;
-                },
-            },
-            debug: this.config.debug,
+    public async verifyConfiguration<type extends EmailClientType>(options: EmailClientOptions<type>): Promise<void> {
+        const client = this.getClient(options.clientType);
+        await client.verifyConfiguration(options);
+    }
+
+    public send(application: Application, user: User, notification: NotificationPayload): Promise<void> {
+        const client = this.getClient(application.configuration.email.clientType);
+
+        return client.send(application.configuration.email, {
+            to: user.email,
+            subject: notification.subject,
+            text: notification.body,
+            html: notification.body,
         });
-
-        await transporter.verify();
-
-        return transporter;
-    }
-
-    public async send(application: Application, user: User, notification: NotificationPayload): Promise<void> {
-        try {
-            const transporter = await this.verifyConfigurationAndCreateTransport(application.configuration.email);
-
-            await transporter.sendMail({
-                to: user.email,
-                subject: notification.subject,
-                text: notification.body,
-                html: notification.body,
-            });
-        } catch (e) {
-            throw e;
-        }
     }
 }

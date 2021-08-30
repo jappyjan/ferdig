@@ -15,7 +15,11 @@ import ApplicationCollectionsService from './Collections/ApplicationCollectionsS
 import ApplicationAutomationsService from './Automations/ApplicationAutomationsService';
 import UsersService from '../Users/UsersService';
 import ApplicationNotificationTemplatesService from './Notifications/Templates/ApplicationNotificationTemplatesService';
-import EmailHandler from './Notifications/Handler/EmailHandler';
+import EmailHandler, {
+    AWSSESClientConfiguration,
+    SMTPClientConfiguration,
+} from './Notifications/Handler/EmailHandler';
+import {EmailClientType} from './Notifications/Handler/Email/EmailClient';
 
 export interface ApplicationConfigurationChangePayload {
     loginRequiresValidEmail?: boolean;
@@ -67,9 +71,9 @@ export default class ApplicationsService implements OnInit {
             .leftJoinAndSelect('application.configuration', 'config');
     }
 
-    public async createApplication(
+    public async createApplication<emailType extends EmailClientType> (
         authenticatedUser: User | null,
-        data: CreatePayload,
+        data: CreatePayload<emailType>,
     ): Promise<Application> {
         const runner = this.orm.createQueryRunner();
 
@@ -87,9 +91,9 @@ export default class ApplicationsService implements OnInit {
     }
 
     // noinspection JSMethodCanBeStatic
-    private async createApplicationWithRunner(
+    private async createApplicationWithRunner<emailType extends EmailClientType> (
         authenticatedUser: User | null,
-        data: CreatePayload,
+        data: CreatePayload<emailType>,
         runner: QueryRunner,
     ): Promise<Application> {
         if (!authenticatedUser || !authenticatedUser.auth.hasConsoleAccess) {
@@ -98,19 +102,34 @@ export default class ApplicationsService implements OnInit {
 
         const manager = runner.manager;
 
-        await this.emailHandler.verifyConfigurationAndCreateTransport(data.configuration.email);
+        const {
+            clientConfig: config,
+            clientType
+        } = data.configuration.email as unknown as {
+            clientType: EmailClientType;
+            clientConfig: AWSSESClientConfiguration & SMTPClientConfiguration;
+        };
+
+        await this.emailHandler.verifyConfiguration({
+            clientType,
+            config,
+        });
 
         const configuration = await manager.getRepository(ApplicationConfiguration)
             .save({
                 loginRequiresValidEmail: true,
                 email: {
-                    host: data.configuration.email.host,
-                    port: data.configuration.email.port,
-                    ssl: data.configuration.email.ssl,
-                    authUser: data.configuration.email.authUser,
-                    authPassword: data.configuration.email.authPassword,
-                    fromName: data.configuration.email.fromName,
-                    fromAddress: data.configuration.email.fromAddress,
+                    clientType,
+                    host: config.host ?? null,
+                    port: config.port ?? null,
+                    ssl: config.ssl ?? null,
+                    authUser: config.authUser ?? null,
+                    authPassword: config.authPassword ?? null,
+                    fromName: config.fromName ?? null,
+                    fromAddress: config.fromAddress,
+                    replyToName: config.replyToName ?? null,
+                    replyToAddress: config.replyToAddress,
+                    region: config.region ?? null,
                 },
             });
 
@@ -215,6 +234,7 @@ export default class ApplicationsService implements OnInit {
         };
     }
 
+    // TODO: make it possible to change email configuration
     public async changeApplicationConfiguration(
         authenticatedUser: User | null,
         applicationId: string,

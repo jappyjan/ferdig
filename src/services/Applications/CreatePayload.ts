@@ -1,18 +1,16 @@
-export interface CreateConfigurationEmailPayload {
-    host: string;
-    port: number;
-    ssl: boolean;
-    authUser: string;
-    authPassword: string;
-    fromName: string;
-    fromAddress: string;
+import {EmailClientType} from './Notifications/Handler/Email/EmailClient';
+import {EmailClientConfigurations} from './Notifications/Handler/EmailHandler';
+
+export interface CreateConfigurationEmailPayload<type extends EmailClientType> {
+    clientType: type;
+    clientConfig: EmailClientConfigurations[type];
 }
 
-export interface CreateConfigurationPayload {
-    email: CreateConfigurationEmailPayload;
+export interface CreateConfigurationPayload<emailType extends EmailClientType> {
+    email: CreateConfigurationEmailPayload<emailType>;
 }
 
-export interface CreatePayload {
+export interface CreatePayload<emailType extends EmailClientType> {
     internalName: string;
-    configuration: CreateConfigurationPayload;
+    configuration: CreateConfigurationPayload<emailType>;
 }
