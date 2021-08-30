@@ -37,4 +37,8 @@ export default class ApplicationConfigurationEmailModel implements ApplicationCo
     @Required()
     @Nullable(String)
     replyToName: string | null;
+
+    @Required()
+    @Nullable(String)
+    region: string | null;
 }
