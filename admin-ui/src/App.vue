@@ -59,7 +59,6 @@ import AppNavigationDrawer from '@/components/layout/AppNavigationDrawer.vue';
 import {State} from 'vuex-class';
 import {Breadcrumb} from '@/store/RootState';
 import FerdigUpdateBanner from '@/components/layout/FerdigUpdateBanner.vue';
-import {localStorageKey} from '@/store/LocalStorageKey';
 
 @Component({
   components: {
@@ -86,17 +85,10 @@ export default class App extends Vue {
   }
 
   private async initFerdig() {
-    const previousToken = localStorage.getItem(localStorageKey);
-
-    if (!previousToken) {
-      return;
-    }
-
     const client = await getFerdigClient();
-    client.setToken(previousToken);
 
     const user = await client.auth.getCurrentUser();
-    await this.$store.dispatch('auth/setSession', {user, token: previousToken});
+    await this.$store.dispatch('auth/setSession', {user, token: client.getToken()});
   }
 
   // noinspection JSMethodCanBeStatic

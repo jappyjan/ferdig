@@ -83,7 +83,7 @@ export default class NodemailerClient implements EmailClient {
         return createTransport({
             SES: {
                 ses,
-                aws
+                aws,
             },
         });
     }
