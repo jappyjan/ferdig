@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.39.4](https://www.github.com/jappyjan/ferdig/compare/v1.39.3...v1.39.4) (2021-09-01)
+
+
+### Miscellaneous
+
+* removal of console.log ([29ee347](https://www.github.com/jappyjan/ferdig/commit/29ee347c6c1be3cd302dcff100bb54d1f9bf4367))
+
 ### [1.39.3](https://www.github.com/jappyjan/ferdig/compare/v1.39.2...v1.39.3) (2021-09-01)
 
 
