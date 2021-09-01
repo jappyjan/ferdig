@@ -129,7 +129,6 @@ export default class ApplicationsService implements OnInit {
                     fromAddress: config.fromAddress,
                     replyToName: config.replyToName ?? null,
                     replyToAddress: config.replyToAddress,
-                    region: config.region ?? null,
                 },
             });
 

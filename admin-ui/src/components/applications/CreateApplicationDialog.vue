@@ -61,7 +61,6 @@
                   <aws-ses-client-form v-if="emailClientType === 'aws_ses'"
                                        :from-address.sync="sesClientConfig.fromAddress"
                                        :reply-to-address.sync="sesClientConfig.replyToAddress"
-                                       :region.sync="sesClientConfig.region"
                   />
                 </v-flex>
               </v-layout>
@@ -145,7 +144,6 @@ export default class CreateApplicationDialog extends Vue {
   private sesClientConfig: FerdigApplicationConfigurationEmailAWSSESClientConfig = {
     fromAddress: '',
     replyToAddress: '',
-    region: 'eu-central-1',
   }
 
   private isCreating = false;

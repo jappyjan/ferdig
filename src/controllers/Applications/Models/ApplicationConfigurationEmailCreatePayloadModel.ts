@@ -36,9 +36,6 @@ class ApplicationConfigurationEmailAWSSESClientConfig {
 
     @Required()
     replyToAddress: string;
-
-    @Required()
-    region: string;
 }
 
 export default class ApplicationConfigurationEmailCreatePayloadModel {

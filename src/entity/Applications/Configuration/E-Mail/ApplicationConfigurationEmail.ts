@@ -31,7 +31,4 @@ export default class ApplicationConfigurationEmail {
 
     @Column({nullable: false, type: 'varchar'})
     public replyToAddress: string;
-
-    @Column({nullable: true, type: 'varchar'})
-    public region: string | null;
 }

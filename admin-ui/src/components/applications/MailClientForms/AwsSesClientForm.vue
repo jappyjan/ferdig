@@ -2,25 +2,6 @@
   <v-layout wrap>
     <v-flex xs12>
       <v-card width="100%" outlined>
-        <v-card-subtitle>AWS Region</v-card-subtitle>
-
-        <v-container grid-list-md>
-          <v-layout wrap>
-            <!-- Region -->
-            <v-flex xs12>
-              <v-text-field label="Region"
-                            v-model="regionProp"
-                            :rules="[inputRules.isRequired]"
-                            type="text"
-              />
-            </v-flex>
-          </v-layout>
-        </v-container>
-      </v-card>
-    </v-flex>
-
-    <v-flex xs12>
-      <v-card width="100%" outlined>
         <v-card-subtitle>E-Mail Envelope</v-card-subtitle>
 
         <v-container grid-list-md>
@@ -67,8 +48,5 @@ export default class AwsSesClientForm extends Vue {
 
   @PropSync('replyToAddress', {required: true})
   private replyToAddressProp!: string;
-
-  @PropSync('region', {required: true})
-  private regionProp!: string;
 }
 </script>

@@ -8,7 +8,6 @@ import NodemailerClient from './Email/NodemailerClient';
 export interface AWSSESClientConfiguration {
     fromAddress: string;
     replyToAddress: string;
-    region: string;
 }
 
 export interface SMTPClientConfiguration {

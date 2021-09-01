@@ -5,7 +5,7 @@ import {createTransport, Transporter} from 'nodemailer';
 import {$log} from '@tsed/common';
 import {LoggerLevel} from 'nodemailer/lib/shared';
 import {levels} from '@tsed/logger';
-import {AWSSESClientConfiguration, EmailClientOptions, SMTPClientConfiguration} from '../EmailHandler';
+import {EmailClientOptions, SMTPClientConfiguration} from '../EmailHandler';
 import * as aws from 'aws-sdk';
 
 export default class NodemailerClient implements EmailClient {
@@ -20,7 +20,7 @@ export default class NodemailerClient implements EmailClient {
                 return this.createSMTPTransport(options.config as SMTPClientConfiguration);
 
             case EmailClientType.AWS_SES:
-                return this.createSESTransport(options.config as AWSSESClientConfiguration);
+                return this.createSESTransport();
 
             default:
                 throw new Error('Unknown Email Client-Type');
@@ -77,10 +77,8 @@ export default class NodemailerClient implements EmailClient {
     }
 
     // noinspection JSMethodCanBeStatic
-    private createSESTransport(config: AWSSESClientConfiguration): Transporter {
-        const ses = new aws.SES({
-            region: config.region,
-        });
+    private createSESTransport(): Transporter {
+        const ses = new aws.SES();
 
         return createTransport({
             SES: {
