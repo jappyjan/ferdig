@@ -15,10 +15,8 @@ async function makeClientSingleton(): Promise<void> {
     const previousToken = localStorage.getItem(localStorageKey);
 
     if (previousToken) {
-        console.log('setting token', previousToken);
         client.setToken(previousToken);
     } else {
-        console.log('starting anonymous session');
         await client.auth.startSession({protocol: 'anonymous'});
     }
 }
