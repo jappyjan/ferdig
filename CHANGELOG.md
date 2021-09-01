@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.39.2](https://www.github.com/jappyjan/ferdig/compare/v1.39.1...v1.39.2) (2021-09-01)
+
+
+### Bug Fixes
+
+* removal of ses region ([4a78448](https://www.github.com/jappyjan/ferdig/commit/4a78448758f2e21b98ce3bd2fba8445f29353a3c))
+
 ### [1.39.1](https://www.github.com/jappyjan/ferdig/compare/v1.39.0...v1.39.1) (2021-08-30)
 
 
