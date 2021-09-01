@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.39.3](https://www.github.com/jappyjan/ferdig/compare/v1.39.2...v1.39.3) (2021-09-01)
+
+
+### Bug Fixes
+
+* restoring of client token ([8f82b13](https://www.github.com/jappyjan/ferdig/commit/8f82b13143557ff216f665e8b52bb00f3b372248))
+
 ### [1.39.2](https://www.github.com/jappyjan/ferdig/compare/v1.39.1...v1.39.2) (2021-09-01)
 
 
