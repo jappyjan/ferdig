@@ -6745,9 +6745,9 @@ object-keys@^1.0.12, object-keys@^1.1.1:
   integrity sha512-NuAESUOUMrlIXOfHKzD6bpPu3tYt3xvjNdRIQ+FeT0lNb4K8WR70CaDxhuNguS2XG+GjkyMwOzsN5ZktImfhLA==
 
 object-path-set@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/object-path-set/-/object-path-set-1.0.1.tgz#bf382abe301df1bbb13b7a650fab6250b8c851e8"
-  integrity sha512-D4pcwg+bkbHOG6zULZB6AF49xQP+1QGkeL0jMtU2eTRYORx4sYJRCczP3n98T2uI0Z4TvgjtwIOzjJNMv+VImA==
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/object-path-set/-/object-path-set-1.0.2.tgz#364fbd844d3be47c61a074553af1bfd36c2b5d1e"
+  integrity sha512-kvjSaWTxrT4h66JIf4zR4LPxLCEBny0WIP/JIbQ6nqdI8qwfDcNV9vafjWqWBWL+tNlpLB9XyWCkxydCf/wuMw==
 
 object-resolve-path@^1.1.1:
   version "1.1.1"
